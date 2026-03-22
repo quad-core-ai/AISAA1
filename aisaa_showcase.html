@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AISAA — AI Smart Academic Advisor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#050d1e;
+  --navy2:#081428;
+  --navy3:#0c1d3a;
+  --navy4:#102444;
+  --grey:#8899aa;
+  --grey2:#b0bec8;
+  --grey3:#d0dde8;
+  --gold:#c8981a;
+  --gold2:#e8b430;
+  --gold3:#ffd060;
+  --gold-glow:rgba(200,152,26,.25);
+  --white:#f4f8ff;
+  --head:'DM Serif Display',serif;
+  --mono:'Space Mono',monospace;
+  --body:'Space Grotesk',sans-serif;
+}
+html{scroll-behavior:smooth;scroll-snap-type:y mandatory}
+body{font-family:var(--body);background:var(--navy);color:var(--white);overflow-x:hidden;cursor:none}
+
+/* ── CURSOR ── */
+#cur{position:fixed;width:10px;height:10px;background:var(--gold3);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:transform .1s,width .2s,height .2s}
+#cur-ring{position:fixed;width:38px;height:38px;border:1.5px solid rgba(255,208,96,.35);border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:left .12s ease,top .12s ease,width .2s,height .2s}
+
+/* ── SCROLLBAR ── */
+#sb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold3));z-index:9999;border-radius:0 2px 2px 0;transition:width .05s}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:600;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 52px;background:rgba(5,13,30,.88);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06);transform:translateY(-100%);transition:transform .6s cubic-bezier(.76,0,.24,1)}
+nav.show{transform:translateY(0)}
+.nlogo{font-family:var(--head);font-size:1.2rem;font-weight:400;color:var(--white);text-decoration:none;letter-spacing:.05em}
+.nlogo span{color:var(--gold2)}
+.nav-links{display:flex;gap:2px}
+.nav-links a{text-decoration:none;color:rgba(255,255,255,.42);font-size:.72rem;font-weight:500;padding:5px 11px;border-radius:6px;letter-spacing:.04em;transition:color .2s,background .2s}
+.nav-links a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nav-cta{text-decoration:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-size:.72rem;font-weight:700;padding:8px 20px;border-radius:6px;letter-spacing:.04em;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 16px var(--gold-glow)}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,152,26,.4)}
+
+/* ── SECTIONS (snap) ── */
+section{scroll-snap-align:start;position:relative;overflow:hidden}
+
+/* ══════════════════════════════════════════════
+   SECTION 1 — HERO: 3D UNIVERSE
+══════════════════════════════════════════════ */
+#hero{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--navy)}
+.hero-canvas{position:absolute;inset:0;pointer-events:none}
+canvas#starfield{position:absolute;inset:0;width:100%;height:100%}
+
+/* Central orb */
+.orb-wrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-55%);width:520px;height:520px;pointer-events:none}
+.orb{position:absolute;inset:0;border-radius:50%;background:radial-gradient(ellipse at 35% 38%,rgba(16,36,68,.8),rgba(5,13,30,.95));box-shadow:0 0 100px 40px rgba(8,20,40,.7),0 0 0 1px rgba(90,140,220,.12),inset 0 0 80px rgba(26,79,200,.08)}
+.orb-ring{position:absolute;inset:-24px;border-radius:50%;border:1px solid rgba(200,152,26,.18);animation:orb-spin 18s linear infinite}
+.orb-ring2{position:absolute;inset:-56px;border-radius:50%;border:1px solid rgba(200,152,26,.09);animation:orb-spin 28s linear infinite reverse}
+.orb-ring3{position:absolute;inset:-96px;border-radius:50%;border:1px solid rgba(90,140,220,.1);animation:orb-spin 40s linear infinite}
+@keyframes orb-spin{to{transform:rotate(360deg)}}
+.orb-glow{position:absolute;inset:20%;border-radius:50%;background:radial-gradient(ellipse,rgba(26,79,200,.15) 0%,transparent 70%);animation:pulse-glow 4s ease-in-out infinite}
+@keyframes pulse-glow{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
+/* Data nodes on orb ring */
+.node{position:absolute;width:10px;height:10px;background:var(--gold2);border-radius:50%;box-shadow:0 0 12px var(--gold2);transform-origin:260px 260px}
+
+/* Hero text */
+.hero-content{position:relative;z-index:5;text-align:center;max-width:760px;padding:0 24px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:6px 16px;font-size:.68rem;font-weight:500;color:rgba(255,255,255,.55);letter-spacing:.14em;text-transform:uppercase;margin-bottom:32px;animation:fade-up .6s both}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--gold3);box-shadow:0 0 8px var(--gold3);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.hero h1{font-family:var(--head);font-size:clamp(3.2rem,8vw,7.5rem);font-weight:400;line-height:.92;letter-spacing:-1px;margin-bottom:12px;animation:fade-up .7s .1s both}
+.hero h1 .ital{font-style:italic;color:var(--gold3)}
+.hero h1 .dim{color:rgba(255,255,255,.22);font-style:italic;display:block;font-size:0.6em;letter-spacing:.02em;margin-top:8px}
+.hero-sub{font-size:.95rem;color:rgba(255,255,255,.45);line-height:1.85;max-width:440px;margin:20px auto 36px;font-weight:300;animation:fade-up .7s .2s both}
+.hero-btns{display:flex;gap:14px;justify-content:center;animation:fade-up .7s .3s both}
+.btn-primary{text-decoration:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);padding:14px 36px;border-radius:4px;font-weight:700;font-size:.85rem;letter-spacing:.06em;box-shadow:0 8px 32px var(--gold-glow),0 2px 0 rgba(0,0,0,.2);transition:transform .25s,box-shadow .25s}
+.btn-primary:hover{transform:translateY(-4px);box-shadow:0 16px 44px rgba(200,152,26,.45),0 2px 0 rgba(0,0,0,.2)}
+.btn-ghost{text-decoration:none;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);color:#fff;padding:14px 36px;border-radius:4px;font-weight:500;font-size:.85rem;letter-spacing:.04em;transition:transform .25s,border-color .25s,background .25s}
+.btn-ghost:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.09)}
+/* Floating stat pills */
+.stat-float{position:absolute;background:rgba(255,255,255,.06);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:12px 18px;z-index:10;animation:float-bob 6s ease-in-out infinite}
+.stat-float:nth-child(1){top:22%;left:5%;animation-delay:0s}
+.stat-float:nth-child(2){top:32%;right:5%;animation-delay:1.5s}
+.stat-float:nth-child(3){bottom:22%;left:7%;animation-delay:3s}
+.stat-float:nth-child(4){bottom:18%;right:7%;animation-delay:4.5s}
+@keyframes float-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.sf-val{font-family:var(--mono);font-size:1.5rem;font-weight:700;color:var(--gold3);line-height:1}
+.sf-label{font-size:.66rem;color:rgba(255,255,255,.4);letter-spacing:.07em;margin-top:4px}
+@keyframes fade-up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══════════════════════════════════════════════
+   SECTION 2 — THE PROBLEM (DARK EDITORIAL)
+══════════════════════════════════════════════ */
+#problem{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;background:var(--navy2)}
+.prob-left{padding:100px 60px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid rgba(255,255,255,.06)}
+.prob-right{padding:100px 60px;display:flex;flex-direction:column;justify-content:center;gap:24px}
+.sec-label{font-family:var(--mono);font-size:.62rem;font-weight:400;letter-spacing:.18em;text-transform:uppercase;color:var(--gold2);margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.sec-label::before{content:'';display:block;width:24px;height:1px;background:var(--gold2)}
+.prob-left h2{font-family:var(--head);font-size:clamp(2.4rem,5vw,5rem);font-weight:400;font-style:italic;line-height:1.06;letter-spacing:-.5px;color:var(--white)}
+.prob-left h2 em{font-style:normal;color:var(--gold3)}
+.prob-left p{font-size:.95rem;color:rgba(255,255,255,.45);line-height:1.88;margin-top:20px;max-width:360px}
+/* stat block */
+.prob-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:24px;position:relative;overflow:hidden;transition:border-color .3s,transform .3s}
+.prob-stat:hover{border-color:rgba(200,152,26,.3);transform:translateX(8px)}
+.prob-stat::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--gold),var(--gold2))}
+.ps-num{font-family:var(--head);font-size:3rem;font-weight:400;color:var(--white);line-height:1}
+.ps-num span{color:var(--gold2)}
+.ps-desc{font-size:.8rem;color:rgba(255,255,255,.42);line-height:1.7;margin-top:6px}
+
+/* ══════════════════════════════════════════════
+   SECTION 3 — SOLUTION (3D CARD ORBIT)
+══════════════════════════════════════════════ */
+#solution{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px 60px;background:var(--navy3);text-align:center}
+.sol-head{max-width:680px;margin:0 auto 70px}
+.sol-head h2{font-family:var(--head);font-size:clamp(2.4rem,5vw,4.8rem);font-weight:400;line-height:1.05;letter-spacing:-.5px;color:var(--white)}
+.sol-head h2 em{font-style:italic;color:var(--gold3)}
+.sol-head p{font-size:.95rem;color:rgba(255,255,255,.42);line-height:1.88;margin-top:18px;font-weight:300}
+/* 3D orbit system */
+.orbit-system{position:relative;width:680px;height:480px;perspective:900px;margin:0 auto}
+.orbit-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,var(--navy4),var(--navy));border:1.5px solid rgba(200,152,26,.35);display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(200,152,26,.2),0 0 80px rgba(26,79,200,.15);z-index:5}
+.orbit-center-text{font-family:var(--head);font-size:1.1rem;font-style:italic;color:var(--gold3);text-align:center;line-height:1.1}
+.orbit-ring-svg{position:absolute;inset:-60px;pointer-events:none}
+/* Orbiting feature cards */
+.feat-card{position:absolute;width:160px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:18px 16px;text-align:center;cursor:default;transition:border-color .3s,background .3s,box-shadow .3s,transform .3s;transform-style:preserve-3d}
+.feat-card:hover{border-color:rgba(200,152,26,.4);background:rgba(200,152,26,.07);box-shadow:0 16px 40px rgba(0,0,0,.4),0 0 24px rgba(200,152,26,.15);transform:translateY(-8px) rotateX(-4deg) rotateY(4deg) scale(1.04)}
+.fc-icon{font-size:1.8rem;margin-bottom:10px;display:block}
+.fc-title{font-size:.78rem;font-weight:600;color:var(--white);line-height:1.3;margin-bottom:6px}
+.fc-desc{font-size:.65rem;color:rgba(255,255,255,.38);line-height:1.6}
+
+/* ══════════════════════════════════════════════
+   SECTION 4 — HOW IT WORKS (TIMELINE)
+══════════════════════════════════════════════ */
+#howitworks{min-height:100vh;padding:100px 60px;background:var(--navy);display:flex;flex-direction:column;justify-content:center}
+.hw-inner{max-width:1080px;margin:0 auto;width:100%}
+.hw-head{margin-bottom:64px}
+.hw-head h2{font-family:var(--head);font-size:clamp(2.2rem,4.5vw,4.2rem);font-weight:400;line-height:1.05;letter-spacing:-.5px;color:var(--white)}
+.hw-head h2 em{font-style:italic;color:var(--gold3)}
+.hw-head p{font-size:.9rem;color:rgba(255,255,255,.4);line-height:1.8;max-width:460px;margin-top:14px;font-weight:300}
+/* Timeline */
+.timeline{position:relative;padding-left:60px}
+.timeline::before{content:'';position:absolute;left:18px;top:0;bottom:0;width:1px;background:linear-gradient(180deg,var(--gold),rgba(200,152,26,.1))}
+.tl-step{position:relative;margin-bottom:48px;opacity:0;transform:translateX(-20px);transition:opacity .5s,transform .5s}
+.tl-step.vis{opacity:1;transform:translateX(0)}
+.tl-dot{position:absolute;left:-51px;top:4px;width:18px;height:18px;border-radius:50%;background:var(--navy);border:2px solid var(--gold2);display:flex;align-items:center;justify-content:center}
+.tl-dot::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--gold2)}
+.tl-tag{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);margin-bottom:8px}
+.tl-step h3{font-family:var(--head);font-size:1.4rem;font-weight:400;color:var(--white);margin-bottom:8px}
+.tl-step p{font-size:.84rem;color:rgba(255,255,255,.42);line-height:1.78;max-width:560px}
+.tl-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.tl-chip{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:4px 10px;font-size:.65rem;color:rgba(255,255,255,.5);font-weight:500;letter-spacing:.04em}
+
+/* ══════════════════════════════════════════════
+   SECTION 5 — STAKEHOLDERS (3D FLIP)
+══════════════════════════════════════════════ */
+#stakeholders{min-height:100vh;padding:100px 60px;background:var(--navy2);display:flex;flex-direction:column;justify-content:center}
+.stake-inner{max-width:1080px;margin:0 auto;width:100%}
+.stake-head{margin-bottom:56px}
+.stake-head h2{font-family:var(--head);font-size:clamp(2.2rem,4.5vw,4.2rem);font-weight:400;line-height:1.05;letter-spacing:-.5px;color:var(--white)}
+.stake-head h2 em{font-style:italic;color:var(--gold3)}
+.roles-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.role-card{height:300px;perspective:700px;cursor:pointer}
+.role-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.76,0,.24,1)}
+.role-card:hover .role-inner{transform:rotateY(180deg)}
+.role-front,.role-back{position:absolute;inset:0;border-radius:10px;backface-visibility:hidden;padding:26px;border:1px solid rgba(255,255,255,.08)}
+.role-front{background:rgba(255,255,255,.04);display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.role-front::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(5,13,30,.95));border-radius:10px}
+.rf-icon{position:absolute;top:22px;right:22px;font-size:2.8rem;opacity:.18}
+.rf-num{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;color:var(--gold2);margin-bottom:8px;position:relative;z-index:1}
+.rf-title{font-family:var(--head);font-size:1.4rem;font-weight:400;color:#fff;position:relative;z-index:1}
+.rf-hint{font-size:.62rem;color:rgba(255,255,255,.25);margin-top:8px;font-style:italic;position:relative;z-index:1}
+.role-back{background:linear-gradient(135deg,var(--navy3),var(--navy4));transform:rotateY(180deg);border-color:rgba(200,152,26,.18);display:flex;flex-direction:column;justify-content:center;gap:10px}
+.rb-title{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold2);margin-bottom:4px}
+.rb-item{font-size:.76rem;color:rgba(255,255,255,.6);line-height:1.55;display:flex;gap:8px;align-items:flex-start}
+.rb-arrow{color:var(--gold2);flex-shrink:0;font-size:.7rem;margin-top:1px}
+
+/* ══════════════════════════════════════════════
+   SECTION 6 — TECH STACK ARCHITECTURE
+══════════════════════════════════════════════ */
+#tech{min-height:100vh;padding:100px 60px;background:var(--navy3);display:flex;flex-direction:column;justify-content:center}
+.tech-inner{max-width:1080px;margin:0 auto;width:100%}
+.tech-head{margin-bottom:56px}
+.tech-head h2{font-family:var(--head);font-size:clamp(2.2rem,4.5vw,4.2rem);font-weight:400;line-height:1.05;letter-spacing:-.5px;color:var(--white)}
+.tech-head h2 em{font-style:italic;color:var(--gold3)}
+/* Architecture layers */
+.arch-layers{display:flex;flex-direction:column;gap:14px}
+.arch-layer{display:grid;grid-template-columns:140px 1fr;gap:0;border:1px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden;transition:border-color .3s,transform .3s;transform:translateX(0)}
+.arch-layer:hover{border-color:rgba(200,152,26,.25);transform:translateX(8px)}
+.layer-label{background:rgba(255,255,255,.04);padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;border-right:1px solid rgba(255,255,255,.08)}
+.ll-text{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold2)}
+.layer-content{padding:18px 24px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tech-pill{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:6px 14px;font-size:.72rem;font-weight:500;color:rgba(255,255,255,.65);transition:border-color .2s,color .2s,background .2s}
+.tech-pill:hover{border-color:rgba(200,152,26,.4);color:var(--gold3);background:rgba(200,152,26,.07)}
+.tech-pill.highlight{background:rgba(200,152,26,.12);border-color:rgba(200,152,26,.3);color:var(--gold3)}
+
+/* ══════════════════════════════════════════════
+   SECTION 7 — METRICS (ANIMATED NUMBERS)
+══════════════════════════════════════════════ */
+#metrics{min-height:60vh;padding:100px 60px;background:var(--navy);display:flex;align-items:center}
+.metrics-inner{max-width:1080px;margin:0 auto;width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden}
+.metric-block{padding:48px 36px;border-right:1px solid rgba(255,255,255,.07);text-align:center;position:relative;overflow:hidden;transition:background .3s}
+.metric-block:last-child{border-right:none}
+.metric-block:hover{background:rgba(255,255,255,.03)}
+.metric-block::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:40%;height:1px;background:linear-gradient(90deg,transparent,var(--gold2),transparent)}
+.metric-num{font-family:var(--head);font-size:3.8rem;font-weight:400;line-height:1;color:var(--white)}
+.metric-num .accent{color:var(--gold3)}
+.metric-label{font-size:.74rem;color:rgba(255,255,255,.38);line-height:1.6;margin-top:10px;letter-spacing:.04em;font-weight:300}
+
+/* ══════════════════════════════════════════════
+   SECTION 8 — TEAM
+══════════════════════════════════════════════ */
+#team{min-height:100vh;padding:100px 60px;background:var(--navy2);display:flex;flex-direction:column;justify-content:center}
+.team-inner{max-width:1080px;margin:0 auto;width:100%}
+.team-head{margin-bottom:56px}
+.team-head h2{font-family:var(--head);font-size:clamp(2.2rem,4.5vw,4.2rem);font-weight:400;line-height:1.05;letter-spacing:-.5px;color:var(--white)}
+.team-head h2 em{font-style:italic;color:var(--gold3)}
+.team-head p{font-size:.9rem;color:rgba(255,255,255,.4);line-height:1.8;max-width:420px;margin-top:14px;font-weight:300}
+.team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.team-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden;transition:transform .35s cubic-bezier(.34,1.56,.64,1),border-color .3s,box-shadow .35s}
+.team-card:hover{transform:translateY(-10px) scale(1.02);border-color:rgba(200,152,26,.3);box-shadow:0 24px 60px rgba(0,0,0,.4),0 0 30px rgba(200,152,26,.1)}
+.tc-top{padding:28px 22px 20px;background:linear-gradient(135deg,rgba(16,36,68,.8),rgba(5,13,30,.9));position:relative;overflow:hidden}
+.tc-top::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:radial-gradient(ellipse,rgba(200,152,26,.12),transparent 60%)}
+.tc-avatar{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--navy3),var(--navy4));border:1.5px solid rgba(200,152,26,.3);display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:1.1rem;color:var(--gold3);margin-bottom:14px;position:relative;z-index:1}
+.tc-name{font-family:var(--head);font-size:1rem;font-weight:400;color:#fff;position:relative;z-index:1;margin-bottom:4px}
+.tc-role{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold2);position:relative;z-index:1}
+.tc-bot{padding:14px 22px 20px}
+.tc-specialty{font-size:.76rem;color:rgba(255,255,255,.38);line-height:1.65}
+
+/* ══════════════════════════════════════════════
+   SECTION 9 — CONTACT / DEMO CTA
+══════════════════════════════════════════════ */
+#contact{min-height:80vh;padding:100px 60px;background:var(--navy3);display:flex;align-items:center;justify-content:center;text-align:center;position:relative}
+.contact-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 60%,rgba(200,152,26,.06) 0%,transparent 60%),radial-gradient(ellipse at 30% 20%,rgba(26,79,200,.07) 0%,transparent 50%)}
+.contact-inner{position:relative;z-index:2;max-width:640px}
+.contact-inner h2{font-family:var(--head);font-size:clamp(2.4rem,5vw,4.5rem);font-weight:400;font-style:italic;line-height:1.05;letter-spacing:-.5px;color:var(--white);margin-bottom:20px}
+.contact-inner h2 em{font-style:normal;color:var(--gold3)}
+.contact-inner p{font-size:.95rem;color:rgba(255,255,255,.42);line-height:1.85;margin-bottom:40px;font-weight:300}
+.contact-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.contact-info{margin-top:48px;display:flex;gap:32px;justify-content:center;flex-wrap:wrap}
+.ci-item{font-size:.78rem;color:rgba(255,255,255,.35);letter-spacing:.04em;display:flex;align-items:center;gap:8px}
+.ci-item a{color:rgba(255,255,255,.35);text-decoration:none;transition:color .2s}
+.ci-item a:hover{color:var(--gold3)}
+.ci-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.2)}
+
+/* ── FOOTER ── */
+footer{background:var(--navy);border-top:1px solid rgba(255,255,255,.06);padding:40px 60px;display:flex;align-items:center;justify-content:space-between}
+.foot-logo{font-family:var(--head);font-size:1.15rem;color:#fff;font-style:italic}
+.foot-logo span{color:var(--gold2)}
+.foot-links{display:flex;gap:20px}
+.foot-links a{text-decoration:none;font-size:.72rem;color:rgba(255,255,255,.3);letter-spacing:.04em;transition:color .2s}
+.foot-links a:hover{color:rgba(255,255,255,.7)}
+.foot-copy{font-size:.7rem;color:rgba(255,255,255,.2);letter-spacing:.04em}
+
+/* ── REVEAL ANIMATION ── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1)}
+.reveal.vis{opacity:1;transform:translateY(0)}
+.reveal-left{opacity:0;transform:translateX(-28px);transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1)}
+.reveal-left.vis{opacity:1;transform:translateX(0)}
+.reveal-right{opacity:0;transform:translateX(28px);transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1)}
+.reveal-right.vis{opacity:1;transform:translateX(0)}
+/* stagger */
+.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}.d4{transition-delay:.4s}.d5{transition-delay:.5s}
+
+/* ── 3D TILT EFFECT ── */
+.tilt-card{transform-style:preserve-3d;transition:transform .4s ease}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<div id="sb"></div>
+
+<nav id="nav">
+  <a class="nlogo" href="#hero">AIS<span>AA</span></a>
+  <div class="nav-links">
+    <a href="#problem">Problem</a>
+    <a href="#solution">Solution</a>
+    <a href="#howitworks">How It Works</a>
+    <a href="#stakeholders">Stakeholders</a>
+    <a href="#tech">Tech</a>
+    <a href="#team">Team</a>
+  </div>
+  <a class="nav-cta" href="#contact">Request Demo</a>
+</nav>
+
+<!-- ══════════ HERO ══════════ -->
+<section id="hero">
+  <canvas id="starfield"></canvas>
+
+  <!-- Floating stats -->
+  <div class="stat-float">
+    <div class="sf-val">94<span style="color:var(--gold2);font-size:.8em">%</span></div>
+    <div class="sf-label">At-Risk Detection Rate</div>
+  </div>
+  <div class="stat-float">
+    <div class="sf-val">3<span style="color:var(--gold2);font-size:.8em">x</span></div>
+    <div class="sf-label">Faster Advisor Response</div>
+  </div>
+  <div class="stat-float">
+    <div class="sf-val">5</div>
+    <div class="sf-label">User Roles Served</div>
+  </div>
+  <div class="stat-float">
+    <div class="sf-val">24<span style="color:var(--gold2);font-size:.8em">/7</span></div>
+    <div class="sf-label">Automated Monitoring</div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <div class="badge-dot"></div>
+      University of Wollongong Dubai &nbsp;·&nbsp; QuadCore Team
+    </div>
+    <h1>
+      <span>Intelligent</span>
+      <span class="ital">Academic</span>
+      <span class="dim">Advising, Reinvented.</span>
+    </h1>
+    <p class="hero-sub">AI-powered early-intervention platform that identifies at-risk students, automates escalations, and empowers every stakeholder — before it's too late.</p>
+    <div class="hero-btns">
+      <a class="btn-primary" href="#solution">Explore the System</a>
+      <a class="btn-ghost" href="#contact">Request a Demo</a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ PROBLEM ══════════ -->
+<section id="problem">
+  <div class="prob-left reveal-left">
+    <div class="sec-label">The Challenge</div>
+    <h2>Students fall through<br>the <em>cracks.</em><br>Advisors are<br><em>overwhelmed.</em></h2>
+    <p>Traditional academic advising relies on reactive, manual processes. By the time a student is flagged for support, the damage is already done — failed units, academic exclusion, and lost potential.</p>
+  </div>
+  <div class="prob-right">
+    <div class="prob-stat reveal d1">
+      <div class="ps-num"><span>40</span>%</div>
+      <div class="ps-desc">of at-risk students go undetected until after their first academic failure, when intervention is least effective.</div>
+    </div>
+    <div class="prob-stat reveal d2">
+      <div class="ps-num">1 : <span>200+</span></div>
+      <div class="ps-desc">Typical advisor-to-student ratio makes personalised monitoring humanly impossible at scale.</div>
+    </div>
+    <div class="prob-stat reveal d3">
+      <div class="ps-num"><span>Fragmented</span></div>
+      <div class="ps-desc">Data sits in siloed systems — LMS, attendance registers, grade books — never synthesised into a unified risk picture.</div>
+    </div>
+    <div class="prob-stat reveal d4">
+      <div class="ps-num"><span>Zero</span> automation</div>
+      <div class="ps-desc">Escalation workflows are manual, inconsistent, and often too slow. AISAA changes all of this.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ SOLUTION ══════════ -->
+<section id="solution">
+  <div class="sol-head reveal">
+    <div class="sec-label" style="justify-content:center">The Solution</div>
+    <h2>One platform.<br><em>Every signal.</em> One outcome.</h2>
+    <p>AISAA ingests academic performance, attendance, MRP/WAM trends, and engagement signals — then applies machine learning to intervene at exactly the right moment.</p>
+  </div>
+
+  <div class="orbit-system">
+    <!-- Animated orbit rings via SVG -->
+    <svg class="orbit-ring-svg" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="400" cy="300" rx="280" ry="180" stroke="rgba(200,152,26,0.12)" stroke-width="1" stroke-dasharray="4 8"/>
+      <ellipse cx="400" cy="300" rx="340" ry="220" stroke="rgba(90,140,220,0.08)" stroke-width="1" stroke-dasharray="2 12"/>
+    </svg>
+
+    <div class="orbit-center">
+      <div class="orbit-center-text">AI<br>Core</div>
+    </div>
+
+    <!-- Feature cards positioned around orbit -->
+    <div class="feat-card" style="top:8%;left:50%;transform:translateX(-50%)">
+      <span class="fc-icon">🧠</span>
+      <div class="fc-title">ML Risk Classification</div>
+      <div class="fc-desc">Predicts at-risk status using GPA trends, attendance, and engagement signals</div>
+    </div>
+    <div class="feat-card" style="top:50%;right:2%;transform:translateY(-50%)">
+      <span class="fc-icon">⚡</span>
+      <div class="fc-title">Automated Escalation</div>
+      <div class="fc-desc">Smart workflows trigger advisor outreach the moment thresholds are crossed</div>
+    </div>
+    <div class="feat-card" style="bottom:5%;right:12%">
+      <span class="fc-icon">📊</span>
+      <div class="fc-title">Analytics Dashboard</div>
+      <div class="fc-desc">Real-time cohort views, trend analysis, and intervention tracking</div>
+    </div>
+    <div class="feat-card" style="bottom:5%;left:12%">
+      <span class="fc-icon">🔔</span>
+      <div class="fc-title">Multi-Channel Alerts</div>
+      <div class="fc-desc">Email, in-app, and Teams notifications for every critical event</div>
+    </div>
+    <div class="feat-card" style="top:50%;left:2%;transform:translateY(-50%)">
+      <span class="fc-icon">🔒</span>
+      <div class="fc-title">Role-Based Security</div>
+      <div class="fc-desc">Microsoft SSO, MFA, and Row Level Security protecting every record</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ HOW IT WORKS ══════════ -->
+<section id="howitworks">
+  <div class="hw-inner">
+    <div class="hw-head reveal">
+      <div class="sec-label">Process</div>
+      <h2>From <em>raw data</em><br>to <em>decisive action</em></h2>
+      <p>A four-stage intelligent pipeline that never sleeps, never misses a signal.</p>
+    </div>
+    <div class="timeline">
+      <div class="tl-step">
+        <div class="tl-dot"></div>
+        <div class="tl-tag">Stage 01 — Ingest</div>
+        <h3>Unified Data Aggregation</h3>
+        <p>AISAA connects to institutional data sources — LMS exports, attendance systems, grade records, and MRP/WAM APIs — consolidating every academic signal into a single, live database via Supabase.</p>
+        <div class="tl-chips">
+          <span class="tl-chip">Supabase PostgreSQL</span><span class="tl-chip">RESTful APIs</span><span class="tl-chip">CSV Import</span><span class="tl-chip">Real-Time Sync</span>
+        </div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot"></div>
+        <div class="tl-tag">Stage 02 — Analyse</div>
+        <h3>AI-Powered Risk Scoring</h3>
+        <p>Our fine-tuned machine learning model evaluates attendance trends, grade trajectories, session engagement, and historical patterns — generating a weighted risk classification (High / Medium / Low) for every enrolled student.</p>
+        <div class="tl-chips">
+          <span class="tl-chip">Python ML Model</span><span class="tl-chip">GPT-4o Integration</span><span class="tl-chip">Weighted Scoring</span><span class="tl-chip">Trend Analysis</span>
+        </div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot"></div>
+        <div class="tl-tag">Stage 03 — Escalate</div>
+        <h3>Intelligent Workflow Automation</h3>
+        <p>When thresholds are breached, AISAA automatically creates academic concern tickets, assigns them to the relevant advisor, and notifies students — all without manual intervention. Case notes and resolution timelines are tracked end-to-end.</p>
+        <div class="tl-chips">
+          <span class="tl-chip">Auto-Ticketing</span><span class="tl-chip">Email Notifications</span><span class="tl-chip">MS Teams Alerts</span><span class="tl-chip">Case Management</span>
+        </div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot"></div>
+        <div class="tl-tag">Stage 04 — Intervene</div>
+        <h3>Personalised AI Recommendations</h3>
+        <p>GPT-4o synthesises each student's profile into contextual advisor briefs, recommended support resources, and actionable next steps — so every conversation starts with insight, not guesswork.</p>
+        <div class="tl-chips">
+          <span class="tl-chip">GPT-4o Summaries</span><span class="tl-chip">Personalised Plans</span><span class="tl-chip">Resource Matching</span><span class="tl-chip">Outcome Tracking</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ STAKEHOLDERS ══════════ -->
+<section id="stakeholders">
+  <div class="stake-inner">
+    <div class="stake-head reveal">
+      <div class="sec-label">Stakeholders</div>
+      <h2>Built for <em>every</em><br>role in the institution</h2>
+    </div>
+    <div class="roles-grid">
+      <div class="role-card">
+        <div class="role-inner">
+          <div class="role-front" style="background:linear-gradient(135deg,rgba(16,36,68,.8),rgba(5,13,30,.92))">
+            <div class="rf-icon">👤</div>
+            <div class="rf-num">01</div>
+            <div class="rf-title">Student</div>
+            <div class="rf-hint">Hover to see access →</div>
+          </div>
+          <div class="role-back">
+            <div class="rb-title">What Students Get</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>Personal risk dashboard with GPA & attendance trends</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>AI-generated study tips & resource recommendations</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>Direct messaging channel to academic advisor</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>Proactive alerts before deadlines & risk thresholds</div>
+          </div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-inner">
+          <div class="role-front" style="background:linear-gradient(135deg,rgba(26,79,200,.25),rgba(5,13,30,.92))">
+            <div class="rf-icon">📋</div>
+            <div class="rf-num">02</div>
+            <div class="rf-title">Academic Advisor</div>
+            <div class="rf-hint">Hover to see access →</div>
+          </div>
+          <div class="role-back">
+            <div class="rb-title">Advisor Superpowers</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>Cohort-wide risk overview with filter & sort</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>AI-generated student briefings before each meeting</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>Case management: notes, actions, outcomes</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>Automated concern ticket assignment & tracking</div>
+          </div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-inner">
+          <div class="role-front" style="background:linear-gradient(135deg,rgba(120,80,10,.3),rgba(5,13,30,.92))">
+            <div class="rf-icon">🎓</div>
+            <div class="rf-num">03</div>
+            <div class="rf-title">Faculty / Lecturer</div>
+            <div class="rf-hint">Hover to see access →</div>
+          </div>
+          <div class="role-back">
+            <div class="rb-title">Lecturer Visibility</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>Class-level attendance & engagement heatmaps</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>Flag students for review directly from gradebook</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>See which students have open intervention cases</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>Export reports for Academic Progress Committee</div>
+          </div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-inner">
+          <div class="role-front" style="background:linear-gradient(135deg,rgba(60,10,100,.3),rgba(5,13,30,.92))">
+            <div class="rf-icon">🏛️</div>
+            <div class="rf-num">04</div>
+            <div class="rf-title">Registrar / Admin</div>
+            <div class="rf-hint">Hover to see access →</div>
+          </div>
+          <div class="role-back">
+            <div class="rb-title">Admin Control</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>Institution-wide performance analytics & KPIs</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>Manage user roles, permissions, and onboarding</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>Configure risk thresholds and escalation rules</div>
+            <div class="rb-item"><span class="rb-arrow">→</span>Audit logs, data exports, and compliance reports</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ TECH STACK ══════════ -->
+<section id="tech">
+  <div class="tech-inner">
+    <div class="tech-head reveal">
+      <div class="sec-label">Architecture</div>
+      <h2>Enterprise-grade<br><em>technology backbone</em></h2>
+    </div>
+    <div class="arch-layers">
+      <div class="arch-layer reveal d1">
+        <div class="layer-label"><div class="ll-text">Frontend</div></div>
+        <div class="layer-content">
+          <span class="tech-pill highlight">Next.js 14</span>
+          <span class="tech-pill highlight">React</span>
+          <span class="tech-pill">TypeScript</span>
+          <span class="tech-pill">Tailwind CSS</span>
+          <span class="tech-pill">Recharts</span>
+          <span class="tech-pill">Framer Motion</span>
+        </div>
+      </div>
+      <div class="arch-layer reveal d2">
+        <div class="layer-label"><div class="ll-text">Backend</div></div>
+        <div class="layer-content">
+          <span class="tech-pill highlight">Supabase</span>
+          <span class="tech-pill">PostgreSQL</span>
+          <span class="tech-pill">Row Level Security</span>
+          <span class="tech-pill">Edge Functions</span>
+          <span class="tech-pill">Real-Time Subscriptions</span>
+        </div>
+      </div>
+      <div class="arch-layer reveal d3">
+        <div class="layer-label"><div class="ll-text">AI Layer</div></div>
+        <div class="layer-content">
+          <span class="tech-pill highlight">GPT-4o</span>
+          <span class="tech-pill highlight">Python ML</span>
+          <span class="tech-pill">scikit-learn</span>
+          <span class="tech-pill">OpenAI API</span>
+          <span class="tech-pill">Weighted Risk Engine</span>
+        </div>
+      </div>
+      <div class="arch-layer reveal d4">
+        <div class="layer-label"><div class="ll-text">Auth & Security</div></div>
+        <div class="layer-content">
+          <span class="tech-pill highlight">Microsoft SSO</span>
+          <span class="tech-pill highlight">Authenticator MFA</span>
+          <span class="tech-pill">TLS Encryption</span>
+          <span class="tech-pill">Audit Logging</span>
+          <span class="tech-pill">UAE Data Compliance</span>
+        </div>
+      </div>
+      <div class="arch-layer reveal d5">
+        <div class="layer-label"><div class="ll-text">Notifications</div></div>
+        <div class="layer-content">
+          <span class="tech-pill highlight">Microsoft Teams</span>
+          <span class="tech-pill">SendGrid Email</span>
+          <span class="tech-pill">In-App Alerts</span>
+          <span class="tech-pill">Webhook Triggers</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ METRICS ══════════ -->
+<section id="metrics">
+  <div class="metrics-inner">
+    <div class="metric-block reveal d1">
+      <div class="metric-num" id="m1">94<span class="accent">%</span></div>
+      <div class="metric-label">At-Risk Detection<br>Precision Rate</div>
+    </div>
+    <div class="metric-block reveal d2">
+      <div class="metric-num" id="m2"><span class="accent">&lt;</span>2hrs</div>
+      <div class="metric-label">Average Escalation<br>Response Time</div>
+    </div>
+    <div class="metric-block reveal d3">
+      <div class="metric-num" id="m3">5<span class="accent">+</span></div>
+      <div class="metric-label">Distinct User Roles<br>with Tailored Views</div>
+    </div>
+    <div class="metric-block reveal d4">
+      <div class="metric-num" id="m4">100<span class="accent">%</span></div>
+      <div class="metric-label">Automated Monitoring<br>Coverage, 24/7</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ TEAM ══════════ -->
+<section id="team">
+  <div class="team-inner">
+    <div class="team-head reveal">
+      <div class="sec-label">The Builders</div>
+      <h2>QuadCore — <em>four minds,<br>one vision.</em></h2>
+      <p>A multidisciplinary team from the University of Wollongong Dubai, combining expertise in AI, full-stack engineering, UX, and systems architecture.</p>
+    </div>
+    <div class="team-grid">
+      <div class="team-card reveal d1">
+        <div class="tc-top">
+          <div class="tc-avatar">A</div>
+          <div class="tc-name">Abdulla Al Shehhi</div>
+          <div class="tc-role">Project Lead & Full-Stack</div>
+        </div>
+        <div class="tc-bot">
+          <div class="tc-specialty">System architecture, database design, and project delivery. The force holding AISAA together.</div>
+        </div>
+      </div>
+      <div class="team-card reveal d2">
+        <div class="tc-top">
+          <div class="tc-avatar">R</div>
+          <div class="tc-name">Rashed Al Nuaimi</div>
+          <div class="tc-role">AI & Backend Engineer</div>
+        </div>
+        <div class="tc-bot">
+          <div class="tc-specialty">ML model training, GPT-4o integration, risk scoring algorithms, and API engineering.</div>
+        </div>
+      </div>
+      <div class="team-card reveal d3">
+        <div class="tc-top">
+          <div class="tc-avatar">M</div>
+          <div class="tc-name">Mohamed Al Mazroui</div>
+          <div class="tc-role">Frontend & UX</div>
+        </div>
+        <div class="tc-bot">
+          <div class="tc-specialty">User interface design, dashboard components, accessibility, and frontend performance.</div>
+        </div>
+      </div>
+      <div class="team-card reveal d4">
+        <div class="tc-top">
+          <div class="tc-avatar">S</div>
+          <div class="tc-name">Sara Al Zaabi</div>
+          <div class="tc-role">Research & Quality</div>
+        </div>
+        <div class="tc-bot">
+          <div class="tc-specialty">Academic research, user testing, requirements analysis, and documentation excellence.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ CONTACT ══════════ -->
+<section id="contact">
+  <div class="contact-bg"></div>
+  <div class="contact-inner reveal">
+    <div class="sec-label" style="justify-content:center;margin-bottom:24px">Get Involved</div>
+    <h2>Ready to <em>transform</em><br>student success?</h2>
+    <p>AISAA is actively seeking institutional partners, research collaborators, and industry advisors. Let's build the future of academic advising together.</p>
+    <div class="contact-btns">
+      <a class="btn-primary" href="mailto:info@aisaa.ae">Request a Demo</a>
+      <a class="btn-ghost" href="https://quad-core-ai.github.io/AISAA/" target="_blank">View Live Project</a>
+    </div>
+    <div class="contact-info">
+      <div class="ci-item"><div class="ci-dot"></div><a href="mailto:info@aisaa.ae">info@aisaa.ae</a></div>
+      <div class="ci-item"><div class="ci-dot"></div>University of Wollongong Dubai</div>
+      <div class="ci-item"><div class="ci-dot"></div><a href="#">@aisaaquadcore</a></div>
+      <div class="ci-item"><div class="ci-dot"></div>Dubai, UAE</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-logo">AIS<span>AA</span></div>
+  <div class="foot-links">
+    <a href="#problem">Problem</a>
+    <a href="#solution">Solution</a>
+    <a href="#howitworks">How It Works</a>
+    <a href="#stakeholders">Roles</a>
+    <a href="#tech">Tech Stack</a>
+    <a href="#team">Team</a>
+  </div>
+  <div class="foot-copy">© 2025 QuadCore · University of Wollongong Dubai</div>
+</footer>
+
+<script>
+// ── CURSOR ──
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+setInterval(()=>{rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px'},16);
+document.querySelectorAll('a,button,.role-card,.feat-card,.team-card,.prob-stat,.arch-layer').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='6px';cur.style.height='6px';ring.style.width='60px';ring.style.height='60px'});
+  el.addEventListener('mouseleave',()=>{cur.style.width='10px';cur.style.height='10px';ring.style.width='38px';ring.style.height='38px'});
+});
+
+// ── SCROLLBAR ──
+window.addEventListener('scroll',()=>{
+  const p=window.scrollY/(document.body.scrollHeight-window.innerHeight);
+  document.getElementById('sb').style.width=(p*100)+'%';
+});
+
+// ── NAV ──
+window.addEventListener('load',()=>setTimeout(()=>document.getElementById('nav').classList.add('show'),500));
+
+// ── STARFIELD CANVAS ──
+const canvas=document.getElementById('starfield');
+const ctx=canvas.getContext('2d');
+let stars=[];
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+function initStars(){
+  stars=[];
+  for(let i=0;i<220;i++){
+    stars.push({
+      x:Math.random()*canvas.width,y:Math.random()*canvas.height,
+      r:Math.random()*1.4+.2,
+      speed:Math.random()*.15+.05,
+      opacity:Math.random()*.7+.1,
+      twinkle:Math.random()*Math.PI*2
+    });
+  }
+}
+function drawStars(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  stars.forEach(s=>{
+    s.twinkle+=0.012;
+    const alpha=s.opacity*(0.6+0.4*Math.sin(s.twinkle));
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(180,210,255,${alpha})`;
+    ctx.fill();
+    // occasional gold star
+    if(s.r>1.2){
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r*1.6,0,Math.PI*2);
+      ctx.fillStyle=`rgba(220,170,50,${alpha*0.3})`;
+      ctx.fill();
+    }
+    s.y-=s.speed;
+    if(s.y<-2){s.y=canvas.height+2;s.x=Math.random()*canvas.width}
+  });
+}
+// Constellation lines
+let constellationTimer=0;
+function drawConstellations(){
+  if(stars.length<10) return;
+  ctx.strokeStyle='rgba(90,140,255,0.04)';
+  ctx.lineWidth=.6;
+  for(let i=0;i<stars.length;i+=20){
+    const s1=stars[i],s2=stars[(i+7)%stars.length];
+    const d=Math.hypot(s1.x-s2.x,s1.y-s2.y);
+    if(d<160){
+      ctx.beginPath();ctx.moveTo(s1.x,s1.y);ctx.lineTo(s2.x,s2.y);ctx.stroke();
+    }
+  }
+}
+function animateStars(){requestAnimationFrame(animateStars);drawStars();drawConstellations()}
+resizeCanvas();initStars();animateStars();
+window.addEventListener('resize',()=>{resizeCanvas();initStars()});
+
+// ── SCROLL REVEAL ──
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')});
+},{threshold:.1});
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.tl-step').forEach(el=>observer.observe(el));
+
+// ── TILT EFFECT on feature cards ──
+document.querySelectorAll('.feat-card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5;
+    const y=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`translateY(-8px) rotateX(${-y*14}deg) rotateY(${x*14}deg) scale(1.04)`;
+  });
+  card.addEventListener('mouseleave',()=>{card.style.transform=''});
+});
+
+// ── 3D TILT on team cards ──
+document.querySelectorAll('.team-card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5;
+    const y=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`translateY(-10px) rotateX(${-y*10}deg) rotateY(${x*10}deg) scale(1.02)`;
+    card.style.boxShadow=`${-x*20}px ${-y*20}px 60px rgba(0,0,0,.5),0 0 30px rgba(200,152,26,0.1)`;
+  });
+  card.addEventListener('mouseleave',()=>{card.style.transform='';card.style.boxShadow=''});
+});
+
+// ── PARTICLE SYSTEM on hero (mouse parallax) ──
+const hero=document.getElementById('hero');
+hero.addEventListener('mousemove',e=>{
+  const cx=window.innerWidth/2,cy=window.innerHeight/2;
+  const dx=(e.clientX-cx)/cx,dy=(e.clientY-cy)/cy;
+  document.querySelectorAll('.stat-float').forEach((f,i)=>{
+    const depth=.015*(i+1);
+    f.style.transform=`translate(${dx*20*depth*i}px,${dy*15*depth*i}px)`;
+  });
+});
+
+// ── SCROLL-TRIGGERED COUNTER ANIMATION ──
+function animateCount(el, target, suffix=''){
+  let current=0;
+  const step=target/60;
+  const timer=setInterval(()=>{
+    current+=step;
+    if(current>=target){current=target;clearInterval(timer)}
+    el.textContent=Math.floor(current)+suffix;
+  },20);
+}
+const metricsObs=new IntersectionObserver(entries=>{
+  if(entries[0].isIntersecting){
+    // No number animation needed as values are descriptive, just ensure visible
+    metricsObs.disconnect();
+  }
+},{threshold:.3});
+const metricsEl=document.getElementById('metrics');
+if(metricsEl) metricsObs.observe(metricsEl);
+
+// ── ORBIT ANIMATION for solution section ──
+const featCards=document.querySelectorAll('.feat-card');
+let orbitAngle=0;
+// positions are already set via CSS; add subtle floating animation
+featCards.forEach((card,i)=>{
+  let t=i*(Math.PI*2/featCards.length);
+  setInterval(()=>{
+    t+=0.004;
+    const bob=Math.sin(t)*6;
+    // only apply bob, don't override position
+    const base=parseFloat(card.dataset.baseY||0);
+    card.style.marginTop=bob+'px';
+  },40);
+  card.dataset.baseY='0';
+});
+
+// ── GOLD PARTICLE BURST on section enter ──
+function createGoldParticle(x,y){
+  const p=document.createElement('div');
+  p.style.cssText=`position:fixed;left:${x}px;top:${y}px;width:4px;height:4px;background:var(--gold3);border-radius:50%;pointer-events:none;z-index:9999;transition:all 1.2s cubic-bezier(.16,1,.3,1);box-shadow:0 0 8px var(--gold3)`;
+  document.body.appendChild(p);
+  requestAnimationFrame(()=>{
+    const angle=Math.random()*Math.PI*2;
+    const dist=40+Math.random()*80;
+    p.style.transform=`translate(${Math.cos(angle)*dist}px,${Math.sin(angle)*dist}px)`;
+    p.style.opacity='0';
+    p.style.width='2px';p.style.height='2px';
+  });
+  setTimeout(()=>p.remove(),1400);
+}
+document.querySelectorAll('.btn-primary,.btn-ghost,.nav-cta').forEach(btn=>{
+  btn.addEventListener('click',e=>{
+    for(let i=0;i<12;i++) createGoldParticle(e.clientX,e.clientY);
+  });
+});
+</script>
+</body>
+</html>
