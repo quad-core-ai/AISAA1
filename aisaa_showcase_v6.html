@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AISAA — AI Smart Academic Advisor</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#060e1e;
+  --navy2:#0a1628;
+  --navy3:#0f2040;
+  --cream:#f5f0e8;
+  --ivory:#fdfaf4;
+  --warm:#e8e0d0;
+  --gold:#c49018;
+  --gold2:#e8b830;
+  --gold3:#ffd966;
+  --text:#1a0f00;
+  --muted:#5c5040;
+  --head:'Playfair Display',serif;
+  --sans:'DM Sans',sans-serif;
+  --mono:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--ivory);color:var(--text);overflow-x:hidden;cursor:none}
+
+/* CURSOR */
+#cur{position:fixed;width:10px;height:10px;background:var(--gold2);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:transform .1s,width .15s,height .15s;mix-blend-mode:multiply}
+#cur-trail{position:fixed;width:36px;height:36px;border-radius:50%;border:1.5px solid rgba(196,144,24,.4);pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:left .1s ease,top .1s ease}
+#sb{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--navy),var(--gold),var(--gold3));z-index:9999}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:600;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 52px;background:rgba(6,14,30,.96);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06);transform:translateY(-100%);transition:transform .6s cubic-bezier(.76,0,.24,1)}
+nav.show{transform:translateY(0)}
+.nlogo{font-family:var(--head);font-size:1.2rem;font-weight:700;color:#fff;text-decoration:none;font-style:italic}
+.nlogo b{color:var(--gold3);font-style:normal}
+.nl{display:flex;gap:2px}
+.nl a{text-decoration:none;color:rgba(255,255,255,.4);font-family:var(--sans);font-size:.72rem;font-weight:500;padding:5px 11px;border-radius:4px;transition:color .2s,background .2s}
+.nl a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.ndemo{text-decoration:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-size:.72rem;font-weight:700;padding:8px 20px;border-radius:4px;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 14px rgba(196,144,24,.35)}
+.ndemo:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(196,144,24,.5)}
+
+/* ═══════════════════════════════
+   HERO — navy, animated canvas, BIG headline
+═══════════════════════════════ */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:110px 48px 80px;position:relative;overflow:hidden;background:var(--navy);perspective:1200px}
+#bgCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+
+/* 3D rotating grid platform */
+.grid-platform{position:absolute;bottom:-160px;left:50%;transform:translateX(-50%) rotateX(58deg) rotateZ(-4deg);width:1200px;height:700px;pointer-events:none;opacity:.12}
+.gp-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(232,184,48,.3) 1px,transparent 1px),linear-gradient(90deg,rgba(232,184,48,.3) 1px,transparent 1px);background-size:80px 80px;animation:gp-pulse 6s ease-in-out infinite}
+@keyframes gp-pulse{0%,100%{opacity:.7}50%{opacity:1}}
+
+/* floating 3D orbs */
+.orb{position:absolute;border-radius:50%;pointer-events:none;animation:orb-float ease-in-out infinite}
+.orb1{width:320px;height:320px;top:-60px;right:-60px;background:radial-gradient(circle at 35% 35%,rgba(232,184,48,.18),rgba(200,152,26,.06) 50%,transparent 70%);animation-duration:12s;animation-delay:0s}
+.orb2{width:240px;height:240px;bottom:80px;left:-40px;background:radial-gradient(circle at 35% 35%,rgba(26,79,214,.2),transparent 70%);animation-duration:9s;animation-delay:-4s}
+.orb3{width:180px;height:180px;top:30%;right:8%;background:radial-gradient(circle,rgba(232,184,48,.1),transparent 70%);animation-duration:14s;animation-delay:-7s}
+@keyframes orb-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-30px) scale(1.05)}}
+
+/* ghost stat numbers */
+.ghost-stats{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.gs{position:absolute;font-family:var(--mono);color:rgba(232,184,48,.055);font-weight:500;line-height:1;user-select:none;animation:gs-drift linear infinite}
+.gs-1{font-size:5rem;top:12%;left:2%;animation-duration:30s}
+.gs-2{font-size:4rem;top:20%;right:3%;animation-duration:36s;animation-delay:-10s}
+.gs-3{font-size:3.5rem;bottom:28%;left:4%;animation-duration:28s;animation-delay:-18s}
+.gs-4{font-size:4.5rem;bottom:14%;right:2%;animation-duration:22s;animation-delay:-5s}
+.gs-sub{display:block;font-size:.22em;color:rgba(200,180,100,.06);margin-top:4px;letter-spacing:.12em}
+@keyframes gs-drift{0%{transform:translateY(0) translateX(0)}25%{transform:translateY(-22px) translateX(10px)}50%{transform:translateY(-10px) translateX(-14px)}75%{transform:translateY(16px) translateX(8px)}100%{transform:translateY(0) translateX(0)}}
+
+.hero-content{position:relative;z-index:5;text-align:center;max-width:1000px}
+.h-badge{display:inline-flex;align-items:center;gap:9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:2px;padding:7px 20px;font-size:.68rem;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.14em;text-transform:uppercase;margin-bottom:36px;animation:fuA .6s both}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:var(--gold3);box-shadow:0 0 10px var(--gold3);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+#hero h1{font-family:var(--head);margin-bottom:28px;animation:fuA .8s .15s both}
+#hero h1 .l1{display:block;font-size:clamp(1.1rem,2vw,1.5rem);font-weight:700;font-style:italic;color:rgba(255,255,255,.45);letter-spacing:.02em;line-height:1.5;margin-bottom:14px}
+#hero h1 .l2{display:block;font-size:clamp(3.8rem,9vw,10rem);font-weight:900;letter-spacing:-5px;line-height:.88;color:#fff}
+#hero h1 .l2 .hl{color:var(--gold3)}
+#hero h1 .l2 .it{font-style:italic}
+.hero-sub{font-family:var(--sans);font-size:1rem;color:rgba(255,255,255,.42);line-height:1.88;max-width:500px;margin:0 auto 40px;font-weight:300;animation:fuA .8s .25s both}
+.hero-btns{display:flex;gap:14px;justify-content:center;animation:fuA .8s .35s both;flex-wrap:wrap}
+.btn-gold{text-decoration:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);padding:15px 38px;border-radius:3px;font-weight:700;font-size:.9rem;letter-spacing:.03em;box-shadow:0 8px 32px rgba(196,144,24,.4),0 3px 0 rgba(0,0,0,.25);transition:transform .22s,box-shadow .22s}
+.btn-gold:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(196,144,24,.5),0 3px 0 rgba(0,0,0,.15)}
+.btn-ghost{text-decoration:none;background:transparent;color:#fff;padding:15px 38px;border-radius:3px;font-weight:500;font-size:.9rem;border:1px solid rgba(255,255,255,.2);transition:transform .22s,border-color .22s,background .22s}
+.btn-ghost:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.06)}
+
+/* 3D stat cards under hero */
+.stat-row{display:flex;gap:20px;justify-content:center;margin-top:64px;flex-wrap:wrap;animation:fuA .9s .45s both;perspective:800px}
+.sc{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:22px 28px;min-width:150px;text-align:center;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.34,1.56,.64,1),box-shadow .45s,border-color .3s;box-shadow:0 8px 32px rgba(0,0,0,.3),0 4px 0 rgba(0,0,0,.2)}
+.sc:hover{transform:rotateX(-10deg) rotateY(8deg) translateZ(22px) translateY(-10px);box-shadow:0 28px 60px rgba(0,0,0,.5);border-color:rgba(232,184,48,.4)}
+.sc-val{font-family:var(--head);font-size:2.6rem;font-weight:900;color:#fff;line-height:1}
+.sc-val .acc{color:var(--gold3)}
+.sc-desc{font-size:.72rem;color:rgba(255,255,255,.4);line-height:1.5;margin-top:6px;font-weight:400}
+@keyframes fuA{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+
+/* MARQUEE */
+.marquee-wrap{background:var(--cream);border-top:1px solid var(--warm);border-bottom:1px solid var(--warm);padding:16px 0;overflow:hidden;position:relative}
+.marquee-track{display:flex;animation:marquee 42s linear infinite;width:max-content}
+.marquee-track:hover{animation-play-state:paused}
+.mq-item{display:flex;align-items:center;gap:14px;padding:0 44px;white-space:nowrap;flex-shrink:0}
+.mq-quote{font-family:var(--head);font-size:.82rem;color:var(--muted);font-style:italic}
+.mq-quote strong{color:var(--navy);font-style:normal;font-weight:700}
+.mq-dot{width:5px;height:5px;border-radius:50%;background:var(--gold2);flex-shrink:0}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* SHARED */
+.sec{padding:96px 52px}
+.sec-inner{max-width:1120px;margin:0 auto}
+.sec-cream{background:var(--cream)}
+.sec-ivory{background:var(--ivory)}
+.sec-navy{background:var(--navy)}
+.sec-navy2{background:var(--navy2)}
+
+.tag-light{font-family:var(--mono);font-size:.62rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.tag-light::before{content:'';width:20px;height:1px;background:var(--gold);display:inline-block}
+.tag-dark{font-family:var(--mono);font-size:.62rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--gold3);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.tag-dark::before{content:'';width:20px;height:1px;background:var(--gold3);display:inline-block}
+.h2-light{font-family:var(--head);font-size:clamp(2rem,4vw,3.6rem);font-weight:900;letter-spacing:-1px;line-height:1.06;color:var(--navy);margin-bottom:16px}
+.h2-dark{font-family:var(--head);font-size:clamp(2rem,4vw,3.6rem);font-weight:900;letter-spacing:-1px;line-height:1.06;color:#fff;margin-bottom:16px}
+.sub-light{font-size:.9rem;color:var(--muted);max-width:480px;line-height:1.88;font-weight:300}
+.sub-dark{font-size:.9rem;color:rgba(255,255,255,.48);max-width:480px;line-height:1.88;font-weight:300}
+.gold-it{color:var(--gold);font-style:italic}
+.gold3-it{color:var(--gold3);font-style:italic}
+
+/* HOW IT WORKS — 4 steps with 3D */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:56px;perspective:900px}
+.step-card{background:#fff;border:1px solid var(--warm);border-radius:12px;padding:32px 24px;position:relative;overflow:hidden;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.34,1.56,.64,1),box-shadow .5s,border-color .3s;box-shadow:0 2px 12px rgba(6,14,30,.07);cursor:default}
+.step-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));transform:scaleX(0);transform-origin:left;transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+.step-card:hover{transform:rotateX(-8deg) rotateY(5deg) translateZ(20px) translateY(-8px);box-shadow:0 30px 60px rgba(6,14,30,.15);border-color:rgba(200,152,26,.3)}
+.step-card:hover::after{transform:scaleX(1)}
+.step-num{font-family:var(--mono);font-size:3.5rem;font-weight:500;color:rgba(6,14,30,.04);line-height:1;margin-bottom:20px;display:block}
+.step-card h3{font-family:var(--head);font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:10px}
+.step-card p{font-size:.8rem;color:var(--muted);line-height:1.8}
+.step-tag{display:inline-block;margin-top:14px;font-size:.58rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);background:rgba(196,144,24,.1);border:1px solid rgba(196,144,24,.22);padding:3px 10px;border-radius:2px}
+
+/* STAKEHOLDERS — navy bg, flip */
+.roles-wrap{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:48px;perspective:1100px}
+.flip-card{height:290px;perspective:700px;cursor:pointer}
+.flip-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.76,0,.24,1)}
+.flip-card:hover .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{position:absolute;inset:0;border-radius:12px;backface-visibility:hidden;padding:26px;border:1px solid rgba(255,255,255,.1)}
+.flip-front{display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.fi-icon{position:absolute;top:20px;right:20px;font-size:2.6rem;opacity:.14}
+.fi-num{font-family:var(--mono);font-size:.58rem;letter-spacing:.15em;color:var(--gold2);margin-bottom:8px}
+.fi-cat{font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:6px}
+.fi-title{font-family:var(--head);font-size:1.15rem;font-weight:700;color:#fff;line-height:1.2}
+.fi-hint{font-size:.58rem;color:rgba(255,255,255,.22);margin-top:10px;font-style:italic}
+.fc-hod .flip-front{background:linear-gradient(155deg,rgba(200,152,26,.32),rgba(6,14,30,.96))}
+.fc-adv .flip-front{background:linear-gradient(155deg,rgba(26,79,214,.36),rgba(6,14,30,.96))}
+.fc-fac .flip-front{background:linear-gradient(155deg,rgba(10,120,80,.32),rgba(6,14,30,.96))}
+.fc-asc .flip-front{background:linear-gradient(155deg,rgba(110,30,150,.32),rgba(6,14,30,.96))}
+.fc-stu .flip-front{background:linear-gradient(155deg,rgba(190,60,20,.32),rgba(6,14,30,.96))}
+.flip-back{background:rgba(255,255,255,.07);backdrop-filter:blur(12px);transform:rotateY(180deg);display:flex;flex-direction:column;justify-content:center;gap:10px;border-color:rgba(232,184,48,.3)}
+.fb-head{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);margin-bottom:5px}
+.fb-item{font-size:.72rem;color:rgba(255,255,255,.7);line-height:1.55;display:flex;gap:8px;align-items:flex-start}
+.fb-item::before{content:'→';color:var(--gold2);flex-shrink:0;font-size:.66rem;margin-top:2px}
+.flip-hint-txt{font-size:.62rem;color:rgba(255,255,255,.22);font-style:italic;margin-top:6px}
+
+/* FEATURES accordion */
+.acc{display:flex;flex-direction:column;gap:4px;margin-top:52px}
+.acc-item{background:#fff;border:1px solid var(--warm);border-radius:10px;overflow:hidden;transition:border-color .3s,box-shadow .3s;box-shadow:0 1px 6px rgba(6,14,30,.05)}
+.acc-item.open{border-color:rgba(200,152,26,.4);box-shadow:0 6px 28px rgba(200,152,26,.12)}
+.acc-hd{padding:20px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .2s}
+.acc-hd:hover{background:var(--cream)}
+.acc-left{display:flex;align-items:center;gap:14px;flex:1}
+.acc-n{font-family:var(--mono);font-size:.66rem;color:rgba(6,14,30,.2);flex-shrink:0;width:24px}
+.acc-title{font-family:var(--sans);font-size:.95rem;font-weight:600;color:var(--navy)}
+.acc-tag{font-size:.58rem;font-weight:700;background:rgba(196,144,24,.1);color:var(--gold);border:1px solid rgba(196,144,24,.24);padding:3px 10px;border-radius:2px;margin-left:10px;white-space:nowrap;flex-shrink:0;letter-spacing:.06em}
+.acc-arr{width:24px;height:24px;border-radius:50%;border:1px solid var(--warm);display:flex;align-items:center;justify-content:center;font-size:.66rem;color:var(--muted);transition:transform .4s cubic-bezier(.34,1.56,.64,1),background .2s,border-color .2s;flex-shrink:0}
+.acc-item.open .acc-arr{transform:rotate(180deg);background:rgba(196,144,24,.14);border-color:rgba(196,144,24,.36);color:var(--gold)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .55s cubic-bezier(.76,0,.24,1)}
+.acc-item.open .acc-body{max-height:200px}
+.acc-content{padding:0 24px 24px 62px;font-size:.82rem;color:var(--muted);line-height:1.88}
+
+/* TEAM — 6 3D tilt cards */
+.team-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-top:52px;perspective:1000px}
+.t-card{background:#fff;border:1px solid var(--warm);border-radius:12px;padding:26px 14px;text-align:center;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.34,1.56,.64,1),box-shadow .5s,border-color .3s;cursor:default;box-shadow:0 2px 12px rgba(6,14,30,.06)}
+.t-card:hover{transform:rotateX(-10deg) rotateY(6deg) translateZ(16px) translateY(-8px);box-shadow:0 28px 60px rgba(6,14,30,.14);border-color:rgba(200,152,26,.35)}
+.t-av{width:58px;height:58px;border-radius:50%;margin:0 auto 14px;background:linear-gradient(135deg,var(--navy),var(--navy3));border:2px solid var(--warm);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:500;font-size:.9rem;color:var(--gold3);overflow:hidden}
+.t-av img{width:100%;height:100%;object-fit:cover}
+.t-name{font-family:var(--head);font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:4px;line-height:1.25}
+.t-role{font-family:var(--mono);font-size:.58rem;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;font-weight:500}
+
+/* REVIEWS */
+.rv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:52px;perspective:900px}
+.rv-card{background:#fff;border:1px solid var(--warm);border-radius:14px;padding:30px;position:relative;min-height:200px;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.34,1.56,.64,1),box-shadow .5s;box-shadow:0 2px 12px rgba(6,14,30,.06)}
+.rv-card:hover{transform:rotateX(-6deg) rotateY(4deg) translateZ(14px);box-shadow:0 28px 60px rgba(6,14,30,.12)}
+.rv-stars{display:flex;gap:3px;margin-bottom:14px}
+.rv-star{color:var(--gold2);font-size:.9rem}
+.rv-lines{display:flex;flex-direction:column;gap:9px}
+.rv-line{height:10px;border-radius:3px;background:var(--warm)}
+.rv-ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:rgba(253,250,244,.92);border-radius:14px}
+.rv-ov-i{font-size:1.8rem;opacity:.28}
+.rv-ov p{font-size:.74rem;color:var(--muted);font-style:italic;font-family:var(--head)}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:68px;align-items:center;margin-top:48px}
+.about-img{border-radius:16px;overflow:hidden;height:420px;position:relative;box-shadow:0 24px 60px rgba(6,14,30,.18);transform-style:preserve-3d;transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+.about-img:hover{transform:rotateX(-4deg) rotateY(5deg) translateZ(10px)}
+.about-img img{width:100%;height:100%;object-fit:cover;filter:saturate(.9) brightness(.88)}
+.about-badge{position:absolute;bottom:18px;left:18px;background:rgba(6,14,30,.92);border:1px solid rgba(255,255,255,.14);border-radius:6px;padding:9px 16px;font-size:.82rem;font-weight:700;color:#fff;font-family:var(--sans)}
+.about-badge b{color:var(--gold3)}
+.about-h{font-family:var(--head);font-size:1.8rem;font-weight:900;color:var(--navy);letter-spacing:-.5px;line-height:1.15;margin-bottom:16px}
+.about-p{font-size:.86rem;color:var(--muted);line-height:1.92;margin-bottom:12px}
+.mv-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px}
+.mv{border-radius:10px;padding:22px;transform-style:preserve-3d;transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+.mv:hover{transform:rotateX(-5deg) rotateY(3deg) translateZ(8px)}
+.mv-m{background:var(--cream);border:1px solid var(--warm)}
+.mv-v{background:linear-gradient(135deg,rgba(196,144,24,.1),rgba(232,184,48,.05));border:1px solid rgba(196,144,24,.22)}
+.mv-i{font-size:1.4rem;margin-bottom:10px}
+.mv h3{font-family:var(--head);font-size:.96rem;font-weight:700;color:var(--navy);margin-bottom:6px}
+.mv p{font-size:.79rem;color:var(--muted);line-height:1.76}
+
+/* CONTACT */
+.ct-grid{display:grid;grid-template-columns:1fr 1.25fr;gap:44px;margin-top:52px}
+.cc-list{display:flex;flex-direction:column;gap:14px}
+.cc{background:#fff;border:1px solid var(--warm);border-radius:10px;padding:18px;display:flex;gap:14px;align-items:flex-start;transform-style:preserve-3d;transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .4s;box-shadow:0 2px 8px rgba(6,14,30,.05)}
+.cc:hover{transform:rotateX(-4deg) translateZ(8px) translateY(-4px);box-shadow:0 16px 36px rgba(6,14,30,.1)}
+.cc-ico{width:40px;height:40px;border-radius:8px;background:var(--cream);border:1px solid var(--warm);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.cc h4{font-family:var(--head);font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:3px}
+.cc p{font-size:.76rem;color:var(--muted);line-height:1.6}
+.cc a{color:var(--navy2);text-decoration:none;font-weight:600}
+.cc a:hover{color:var(--gold)}
+.cf{background:#fff;border:1px solid var(--warm);border-radius:14px;padding:32px;box-shadow:0 4px 20px rgba(6,14,30,.07);transform-style:preserve-3d;transition:transform .4s}
+.cf:hover{transform:rotateX(-2deg) rotateY(1deg) translateZ(6px)}
+.cf h3{font-family:var(--head);font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:5px}
+.cf>p{font-size:.78rem;color:var(--muted);margin-bottom:18px}
+.cfi{width:100%;padding:11px 14px;border:1.5px solid var(--warm);border-radius:6px;background:#fff;font-family:var(--sans);font-size:.84rem;color:var(--navy);outline:none;margin-bottom:9px;transition:border-color .2s}
+.cfi::placeholder{color:rgba(26,15,0,.28)}
+.cfi:focus{border-color:rgba(196,144,24,.55)}
+textarea.cfi{height:86px;resize:vertical}
+.cfsub{width:100%;background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;border:none;padding:13px;border-radius:6px;font-family:var(--sans);font-size:.9rem;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 16px rgba(6,14,30,.22)}
+.cfsub:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(6,14,30,.32)}
+#cfmsg{display:none;margin-top:10px;padding:10px 13px;border-radius:6px;font-size:.78rem}
+#cfmsg.ok{background:rgba(34,197,94,.08);color:#16a34a;border:1px solid rgba(34,197,94,.2)}
+#cfmsg.er{background:rgba(239,68,68,.08);color:#dc2626;border:1px solid rgba(239,68,68,.2)}
+
+/* LEGAL */
+.ltabs{display:flex;gap:10px;margin-bottom:26px}
+.ltab{padding:9px 22px;border-radius:4px;border:1.5px solid var(--warm);background:#fff;font-family:var(--sans);font-size:.77rem;color:var(--muted);cursor:pointer;transition:all .2s;font-weight:500}
+.ltab.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.ltpanel{display:none}
+.ltpanel.on{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.lb{background:#fff;border:1px solid var(--warm);border-radius:10px;padding:22px;transform-style:preserve-3d;transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .3s;box-shadow:0 1px 6px rgba(6,14,30,.05)}
+.lb:hover{transform:rotateX(-4deg) rotateY(2deg) translateZ(8px);box-shadow:0 16px 36px rgba(6,14,30,.1)}
+.lb-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.lb-n{width:28px;height:28px;border-radius:6px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:#fff;flex-shrink:0;font-family:var(--mono)}
+.lb h3{font-family:var(--head);font-size:.9rem;font-weight:700;color:var(--navy)}
+.lb p{font-size:.77rem;color:var(--muted);line-height:1.82}
+.lb a{color:var(--gold);font-weight:600;text-decoration:none}
+.lb strong{color:var(--navy)}
+
+/* FOOTER */
+footer{background:var(--navy);padding:44px 52px 24px}
+.fr{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:14px}
+.flogo{font-family:var(--head);font-size:1.2rem;font-weight:700;color:#fff;font-style:italic}
+.flogo b{color:var(--gold3);font-style:normal}
+.flinks{display:flex;gap:18px;flex-wrap:wrap}
+.flinks a{text-decoration:none;color:rgba(255,255,255,.28);font-size:.72rem;font-family:var(--sans);transition:color .2s}
+.flinks a:hover{color:#fff}
+.fb{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.fb p{color:rgba(255,255,255,.18);font-size:.7rem;font-family:var(--sans)}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(28px) rotateX(8deg);transform-origin:bottom center;transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.reveal.vis{opacity:1;transform:translateY(0) rotateX(0)}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.4s}.d6{transition-delay:.48s}
+
+/* MODAL */
+#demo-modal{position:fixed;inset:0;z-index:9990;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s}
+#demo-modal.open{opacity:1;pointer-events:all}
+.m-bg{position:absolute;inset:0;background:rgba(6,14,30,.65);backdrop-filter:blur(10px)}
+.m-box{position:relative;z-index:1;background:#fff;border:1px solid var(--warm);border-radius:16px;padding:40px;width:100%;max-width:500px;box-shadow:0 40px 80px rgba(6,14,30,.28);transform:scale(.92) translateY(20px);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+#demo-modal.open .m-box{transform:scale(1) translateY(0)}
+.m-close{position:absolute;top:14px;right:14px;background:var(--cream);border:1px solid var(--warm);color:var(--muted);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.88rem;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.m-close:hover{background:var(--warm);color:var(--navy)}
+.m-box h2{font-family:var(--head);font-size:1.6rem;font-weight:900;color:var(--navy);margin-bottom:6px}
+.m-box>p{font-size:.82rem;color:var(--muted);margin-bottom:22px;line-height:1.6}
+.mfi{width:100%;padding:11px 14px;border:1.5px solid var(--warm);border-radius:6px;background:#fff;font-family:var(--sans);font-size:.84rem;color:var(--navy);outline:none;margin-bottom:9px;transition:border-color .2s}
+.mfi::placeholder{color:rgba(26,15,0,.28)}
+.mfi:focus{border-color:rgba(196,144,24,.55)}
+textarea.mfi{height:88px;resize:vertical}
+.msub{width:100%;background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;border:none;padding:13px;border-radius:6px;font-family:var(--sans);font-size:.9rem;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 16px rgba(6,14,30,.22)}
+.msub:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(6,14,30,.32)}
+#mmsg{display:none;margin-top:10px;padding:10px 13px;border-radius:6px;font-size:.78rem}
+#mmsg.ok{background:rgba(34,197,94,.08);color:#16a34a;border:1px solid rgba(34,197,94,.2)}
+#mmsg.er{background:rgba(239,68,68,.08);color:#dc2626;border:1px solid rgba(239,68,68,.2)}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="cur-trail"></div>
+<div id="sb"></div>
+
+<!-- MODAL -->
+<div id="demo-modal">
+  <div class="m-bg" onclick="closeModal()"></div>
+  <div class="m-box">
+    <button class="m-close" onclick="closeModal()">✕</button>
+    <h2>Request a Demo</h2>
+    <p>The AISAA team will get back to you within 24 hours.</p>
+    <input class="mfi" id="mn" type="text" placeholder="Your Full Name *"/>
+    <input class="mfi" id="mo" type="text" placeholder="Institution / University *"/>
+    <input class="mfi" id="mr" type="text" placeholder="Your Role (e.g. Head of School, Lecturer)"/>
+    <input class="mfi" id="me" type="email" placeholder="Email Address *"/>
+    <textarea class="mfi" id="mm" placeholder="What interests you most about AISAA? *"></textarea>
+    <button class="msub" onclick="sendDemo()">Send Request →</button>
+    <div id="mmsg"></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#hero" class="nlogo"><i>AIS</i><b>AA</b></a>
+  <div class="nl">
+    <a href="#how">How It Works</a><a href="#roles">Stakeholders</a><a href="#features">Features</a>
+    <a href="#team">Team</a><a href="#reviews">Reviews</a><a href="#about">About</a>
+    <a href="#contact">Contact</a><a href="#legal">Legal</a>
+  </div>
+  <a href="#" class="ndemo" onclick="openModal();return false;">Request Demo →</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="bgCanvas"></canvas>
+  <div class="grid-platform"><div class="gp-lines"></div></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="ghost-stats">
+    <div class="gs gs-1">5<span class="gs-sub">Roles Served</span></div>
+    <div class="gs gs-2">100%<span class="gs-sub">Automated</span></div>
+    <div class="gs gs-3">0<span class="gs-sub">Manual Effort</span></div>
+    <div class="gs gs-4">1<span class="gs-sub">Platform</span></div>
+  </div>
+  <div class="hero-content">
+    <div class="h-badge"><span class="badge-dot"></span>Academic Intelligence Platform &nbsp;·&nbsp; QuadCore · UOWD</div>
+    <h1>
+      <span class="l1">Academic Management Shouldn't Be Manual.</span>
+      <span class="l2">AISAA <span class="it hl">Automates</span> It.</span>
+    </h1>
+    <p class="hero-sub">Raw academic data becomes real institutional intelligence — serving every role, end to end.</p>
+    <div class="hero-btns">
+      <a class="btn-gold" href="#" onclick="openModal();return false;">Request a Demo →</a>
+      <a class="btn-ghost" href="#how">See How It Works</a>
+    </div>
+    <div class="stat-row">
+      <div class="sc"><div class="sc-val"><span class="acc">5</span></div><div class="sc-desc">Stakeholder roles<br>served</div></div>
+      <div class="sc"><div class="sc-val">100<span class="acc">%</span></div><div class="sc-desc">Workflows<br>automated</div></div>
+      <div class="sc"><div class="sc-val"><span class="acc">0</span></div><div class="sc-desc">Manual scheduling<br>effort</div></div>
+      <div class="sc"><div class="sc-val"><span class="acc">1</span></div><div class="sc-desc">Unified platform<br>for all</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div class="mq-item"><span class="mq-quote">"Finally, a system that <strong>alerts before decline</strong> — not after."</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote"><strong>No more manual spreadsheets.</strong> AISAA automates everything."</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote">"The degree planner saves <strong>hours of confusion</strong> every trimester."</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote">"As Head of Department, the <strong>quota forecasting</strong> is a game-changer."</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote">"The chatbot answers <strong>policy questions instantly.</strong>"</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote">"Meeting scheduling is <strong>fully automated</strong> — zero back-and-forth."</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote">"Excuse management that <strong>tracks resolution end-to-end.</strong>"</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote">"<strong>Open-source infrastructure.</strong> No licensing fees. Deploy immediately."</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote">"Finally, a system that <strong>alerts before decline</strong> — not after."</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote"><strong>No more manual spreadsheets.</strong> AISAA automates everything."</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote">"The degree planner saves <strong>hours of confusion</strong> every trimester."</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote">"As Head of Department, the <strong>quota forecasting</strong> is a game-changer."</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote">"The chatbot answers <strong>policy questions instantly.</strong>"</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote">"Meeting scheduling is <strong>fully automated</strong> — zero back-and-forth."</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote">"Excuse management that <strong>tracks resolution end-to-end.</strong>"</span><div class="mq-dot"></div></div>
+    <div class="mq-item"><span class="mq-quote">"<strong>Open-source infrastructure.</strong> No licensing fees. Deploy immediately."</span><div class="mq-dot"></div></div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="sec sec-ivory" id="how">
+  <div class="sec-inner">
+    <div class="tag-light reveal">How It Works</div>
+    <h2 class="h2-light reveal">From Data to Action — <span class="gold-it">Automatically</span></h2>
+    <p class="sub-light reveal">Four-stage pipeline transforming disconnected academic data into coordinated institutional action.</p>
+    <div class="steps">
+      <div class="step-card reveal d1"><span class="step-num">01</span><h3>Ingest &amp; Centralise</h3><p>Academic records, grades, attendance, and enrolment data flow from the university SIS via scheduled secure exports.</p><span class="step-tag">Data Layer</span></div>
+      <div class="step-card reveal d2"><span class="step-num">02</span><h3>Classify &amp; Detect</h3><p>Deterministic Risk Engine calculates MRP, WAM, task mark trends, and attendance thresholds for every enrolled member.</p><span class="step-tag">Risk Engine</span></div>
+      <div class="step-card reveal d3"><span class="step-num">03</span><h3>Alert &amp; Escalate</h3><p>Targeted alerts reach the correct stakeholder with the specific risk area identified. Fully role-aware routing.</p><span class="step-tag">Intelligence</span></div>
+      <div class="step-card reveal d4"><span class="step-num">04</span><h3>Automate &amp; Resolve</h3><p>n8n schedules meetings, syncs calendars, sends reminders, and dispatches bulk recommendation emails automatically.</p><span class="step-tag">Agentic AI</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- STAKEHOLDERS -->
+<section class="sec sec-navy" id="roles">
+  <div class="sec-inner">
+    <div class="tag-dark reveal">Five Stakeholder Roles</div>
+    <h2 class="h2-dark reveal">One Platform. <span class="gold3-it">Every Role</span> Served.</h2>
+    <p class="sub-dark reveal" style="margin-bottom:6px">Hover each card to reveal role-specific features.</p>
+    <p class="flip-hint-txt reveal" style="color:rgba(255,255,255,.2);font-style:italic;font-size:.64rem">↻ Hover to flip</p>
+    <div class="roles-wrap">
+      <div class="flip-card fc-hod reveal d1"><div class="flip-inner"><div class="flip-front"><div class="fi-icon">🏛️</div><div class="fi-num">01</div><div class="fi-cat">Leadership</div><div class="fi-title">Head of Departments</div><div class="fi-hint">Hover to explore →</div></div><div class="flip-back"><div class="fb-head">Dashboard Features</div><div class="fb-item">Course analysis and bottleneck detection</div><div class="fb-item">MRP and WAM distribution across programme</div><div class="fb-item">Quota forecast and potential graduates</div><div class="fb-item">Top graduate rankings by WAM</div></div></div></div>
+      <div class="flip-card fc-adv reveal d2"><div class="flip-inner"><div class="flip-front"><div class="fi-icon">📋</div><div class="fi-num">02</div><div class="fi-cat">Advising</div><div class="fi-title">Academic Advisor</div><div class="fi-hint">Hover to explore →</div></div><div class="flip-back"><div class="fb-head">Dashboard Features</div><div class="fb-item">Advised profiles with full WAM &amp; MRP</div><div class="fb-item">Automated meeting scheduling via n8n</div><div class="fb-item">Excuse review — approve, reject, reassign</div><div class="fb-item">Accessibility notes from ASC</div></div></div></div>
+      <div class="flip-card fc-fac reveal d3"><div class="flip-inner"><div class="flip-front"><div class="fi-icon">🎓</div><div class="fi-num">03</div><div class="fi-cat">Course Delivery</div><div class="fi-title">Faculty</div><div class="fi-hint">Hover to explore →</div></div><div class="flip-back"><div class="fb-head">Dashboard Features</div><div class="fb-item">Attendance recording and absence tracking</div><div class="fb-item">Task mark alerts and at-risk detection</div><div class="fb-item">Excuse management and counsellor notes</div><div class="fb-item">Course analytics and member lookup</div></div></div></div>
+      <div class="flip-card fc-asc reveal d4"><div class="flip-inner"><div class="flip-front"><div class="fi-icon">🤝</div><div class="fi-num">04</div><div class="fi-cat">Support Services</div><div class="fi-title">ASC Staff</div><div class="fi-hint">Hover to explore →</div></div><div class="flip-back"><div class="fb-head">Dashboard Features</div><div class="fb-item">Counsellor notes delivery to faculty</div><div class="fb-item">Reassigned excuse final resolution</div><div class="fb-item">Quota forecast and potential graduates</div><div class="fb-item">Data export in PDF, Excel, CSV</div></div></div></div>
+      <div class="flip-card fc-stu reveal d5"><div class="flip-inner"><div class="flip-front"><div class="fi-icon">📚</div><div class="fi-num">05</div><div class="fi-cat">Academic Journey</div><div class="fi-title">Student</div><div class="fi-hint">Hover to explore →</div></div><div class="flip-back"><div class="fb-head">Dashboard Features</div><div class="fb-item">Real-time MRP, WAM &amp; attendance dashboard</div><div class="fb-item">Visual Degree Planner with CP tracking</div><div class="fb-item">Subject recommendations (2–4) per trimester</div><div class="fb-item">Excuse submission and FAQ Chatbot</div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="sec sec-cream" id="features">
+  <div class="sec-inner">
+    <div class="tag-light reveal">Platform Capabilities</div>
+    <h2 class="h2-light reveal">Intelligent by Design. <span class="gold-it">Automated</span> by Default.</h2>
+    <div class="acc">
+      <div class="acc-item open reveal" id="fa0"><div class="acc-hd" onclick="toggleAcc(0)"><div class="acc-left"><span class="acc-n">01</span><span class="acc-title">Deterministic Risk Classification Engine</span><span class="acc-tag">Risk Engine</span></div><div class="acc-arr">▾</div></div><div class="acc-body"><div class="acc-content">MRP classified as Active (≥66%), Referral (50–65%), Restricted (&lt;50%), or Excluded. WAM calculation with alert thresholds. Task mark trend analysis detecting drops, consecutive declines, and below-average performance. Fully auditable and rule-based — no black-box machine learning.</div></div></div>
+      <div class="acc-item reveal d1" id="fa1"><div class="acc-hd" onclick="toggleAcc(1)"><div class="acc-left"><span class="acc-n">02</span><span class="acc-title">n8n Agentic Workflow Automation</span><span class="acc-tag">Agentic AI</span></div><div class="acc-arr">▾</div></div><div class="acc-body"><div class="acc-content">Reads advisor calendars, proposes meeting slots, handles conflicts, creates calendar events, and sends confirmation emails — zero manual effort. Bulk personalised subject recommendation emails dispatched simultaneously to all enrolled members at the start of each trimester.</div></div></div>
+      <div class="acc-item reveal d2" id="fa2"><div class="acc-hd" onclick="toggleAcc(2)"><div class="acc-left"><span class="acc-n">03</span><span class="acc-title">Degree Planner &amp; Subject Recommendations</span><span class="acc-tag">Academic Planning</span></div><div class="acc-arr">▾</div></div><div class="acc-body"><div class="acc-content">Year-by-year visual degree planner with CP progress, prerequisite mapping, and colour-coded subject status. Priority-scoring recommendation engine suggests the optimal 2–4 subjects for the next trimester based on degree rules, MRP standing, and full academic history.</div></div></div>
+      <div class="acc-item reveal d3" id="fa3"><div class="acc-hd" onclick="toggleAcc(3)"><div class="acc-left"><span class="acc-n">04</span><span class="acc-title">Groq-Powered FAQ Chatbot</span><span class="acc-tag">AI Chatbot</span></div><div class="acc-arr">▾</div></div><div class="acc-body"><div class="acc-content">RAG-based chatbot trained on university policy PDFs. Answers natural language queries about attendance rules, graduation requirements, and institutional procedures for all five roles — within a 3-second response SLA.</div></div></div>
+      <div class="acc-item reveal d4" id="fa4"><div class="acc-hd" onclick="toggleAcc(4)"><div class="acc-left"><span class="acc-n">05</span><span class="acc-title">Excuse Lifecycle Management</span><span class="acc-tag">Workflow Management</span></div><div class="acc-arr">▾</div></div><div class="acc-body"><div class="acc-content">Members submit excuse requests with subject, date, reason, and optional file upload. Faculty approve, reject, or reassign to Advisor. Advisor can reassign to ASC for final review. Attendance records update automatically on approval. Full audit trail maintained end-to-end.</div></div></div>
+      <div class="acc-item reveal d5" id="fa5"><div class="acc-hd" onclick="toggleAcc(5)"><div class="acc-left"><span class="acc-n">06</span><span class="acc-title">Course Analytics &amp; Quota Forecasting</span><span class="acc-tag">Institutional Analytics</span></div><div class="acc-arr">▾</div></div><div class="acc-body"><div class="acc-content">Bottleneck course detection, pass/fail rate analysis, top graduate rankings per year, and quota forecasting by aggregating recommendation demand — giving HoD and ASC the foresight to plan proactively.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="sec sec-ivory" id="team">
+  <div class="sec-inner">
+    <div class="tag-light reveal">Meet the Team</div>
+    <h2 class="h2-light reveal">Built by <span class="gold-it">QuadCore</span></h2>
+    <div class="team-grid">
+      <div class="t-card reveal d1"><div class="t-av"><img src="" onerror="this.parentElement.textContent='GR'"/></div><div class="t-name">Guzail Rafi</div><div class="t-role">Team Lead</div></div>
+      <div class="t-card reveal d2"><div class="t-av"><img src="" onerror="this.parentElement.textContent='KV'"/></div><div class="t-name">Kavya Vinod</div><div class="t-role">Scribe</div></div>
+      <div class="t-card reveal d3"><div class="t-av"><img src="" onerror="this.parentElement.textContent='AD'"/></div><div class="t-name">Aryan Dewan</div><div class="t-role">Programmer</div></div>
+      <div class="t-card reveal d4"><div class="t-av"><img src="" onerror="this.parentElement.textContent='FZ'"/></div><div class="t-name">Faraaz Zuberi</div><div class="t-role">Programmer</div></div>
+      <div class="t-card reveal d5"><div class="t-av"><img src="" onerror="this.parentElement.textContent='MI'"/></div><div class="t-name">Mohamad Itani</div><div class="t-role">Marketing</div></div>
+      <div class="t-card reveal d6"><div class="t-av"><img src="" onerror="this.parentElement.textContent='VV'"/></div><div class="t-name">Vyshnav Vinod</div><div class="t-role">Documentation</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="sec sec-cream" id="reviews">
+  <div class="sec-inner">
+    <div class="tag-light reveal">Reviews</div>
+    <h2 class="h2-light reveal">What Stakeholders <span class="gold-it">Are Saying</span></h2>
+    <div class="rv-grid">
+      <div class="rv-card reveal d1"><div class="rv-stars"><span class="rv-star">★</span><span class="rv-star">★</span><span class="rv-star">★</span><span class="rv-star">★</span><span class="rv-star">★</span></div><div class="rv-lines"><div class="rv-line" style="width:100%"></div><div class="rv-line" style="width:80%"></div><div class="rv-line" style="width:90%"></div></div><div class="rv-ov"><div class="rv-ov-i">💬</div><p>Review coming soon</p></div></div>
+      <div class="rv-card reveal d2"><div class="rv-stars"><span class="rv-star">★</span><span class="rv-star">★</span><span class="rv-star">★</span><span class="rv-star">★</span><span class="rv-star">★</span></div><div class="rv-lines"><div class="rv-line" style="width:90%"></div><div class="rv-line" style="width:75%"></div><div class="rv-line" style="width:85%"></div></div><div class="rv-ov"><div class="rv-ov-i">💬</div><p>Review coming soon</p></div></div>
+      <div class="rv-card reveal d3"><div class="rv-stars"><span class="rv-star">★</span><span class="rv-star">★</span><span class="rv-star">★</span><span class="rv-star">★</span><span class="rv-star">★</span></div><div class="rv-lines"><div class="rv-line" style="width:95%"></div><div class="rv-line" style="width:65%"></div><div class="rv-line" style="width:80%"></div></div><div class="rv-ov"><div class="rv-ov-i">💬</div><p>Review coming soon</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="sec sec-ivory" id="about">
+  <div class="sec-inner">
+    <div class="tag-light reveal">About Us</div>
+    <h2 class="h2-light reveal">Built by QuadCore, <span class="gold-it">for Institutions</span> That Care</h2>
+    <div class="about-grid">
+      <div class="about-img reveal"><img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efd?w=800&q=80" alt="QuadCore Team"/><div class="about-badge">Based in <b>Dubai, UAE</b></div></div>
+      <div class="reveal d2">
+        <h2 class="about-h">Transforming Academic Management Through Intelligent Automation</h2>
+        <p class="about-p">QuadCore built AISAA to address a fundamental gap: the delay between when a member of the institution begins to struggle and when the institution responds. The platform combines a deterministic risk engine, n8n agentic automation, and a Groq-powered chatbot — all on open-source, zero-cost infrastructure.</p>
+        <p class="about-p">Developed as a capstone project at the University of Wollongong in Dubai, AISAA is designed for immediate institutional deployment with no licensing fees or proprietary dependencies.</p>
+        <div class="mv-row">
+          <div class="mv mv-m"><div class="mv-i">🎯</div><h3>Our Mission</h3><p>Eliminate preventable academic failure by giving every institution the intelligence to act before decline becomes crisis.</p></div>
+          <div class="mv mv-v"><div class="mv-i">🔭</div><h3>Our Vision</h3><p>A university ecosystem where every stakeholder operates with real-time intelligence and zero overhead.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="sec sec-cream" id="contact">
+  <div class="sec-inner">
+    <div class="tag-light reveal">Get In Touch</div>
+    <h2 class="h2-light reveal">Request a <span class="gold-it">Demo</span></h2>
+    <div class="ct-grid">
+      <div class="cc-list">
+        <div class="cc reveal d1"><div class="cc-ico">📧</div><div><h4>Email Us</h4><p><a href="mailto:info@aisaa.ae">info@aisaa.ae</a></p></div></div>
+        <div class="cc reveal d2"><div class="cc-ico">📍</div><div><h4>Location</h4><p>Dubai, United Arab Emirates</p></div></div>
+        <div class="cc reveal d3"><div class="cc-ico">📸</div><div><h4>Instagram</h4><p><a href="https://instagram.com/aisaaquadcore" target="_blank">@aisaaquadcore</a></p></div></div>
+        <div class="cc reveal d4"><div class="cc-ico">🏛️</div><div><h4>Institution</h4><p>University of Wollongong Dubai · CSIT321</p></div></div>
+      </div>
+      <div class="cf reveal d2">
+        <h3>Send Us a Message</h3>
+        <p>We reply within 24 hours.</p>
+        <input class="cfi" id="cn" type="text" placeholder="Your Name *"/>
+        <input class="cfi" id="co" type="text" placeholder="Institution *"/>
+        <input class="cfi" id="cr" type="text" placeholder="Your Role"/>
+        <input class="cfi" id="ce" type="email" placeholder="Email Address *"/>
+        <textarea class="cfi" id="cm" placeholder="Message *"></textarea>
+        <button class="cfsub" onclick="sendContact()">Send Message →</button>
+        <div id="cfmsg"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LEGAL -->
+<section class="sec sec-ivory" id="legal">
+  <div class="sec-inner">
+    <div class="tag-light reveal">Legal</div>
+    <h2 class="h2-light reveal" style="margin-bottom:8px">Privacy &amp; <span class="gold-it">Terms</span></h2>
+    <p style="font-size:.75rem;color:var(--muted);margin-bottom:24px;font-family:var(--mono)" class="reveal">Last updated: January 2025 · QuadCore, Dubai, UAE</p>
+    <div class="ltabs reveal">
+      <button class="ltab on" onclick="switchTab('lp',this)">Privacy Policy</button>
+      <button class="ltab" onclick="switchTab('lt',this)">Terms of Use</button>
+    </div>
+    <div class="ltpanel on" id="lp">
+      <div class="lb reveal"><div class="lb-hd"><div class="lb-n">1</div><h3>Information We Collect</h3></div><p>Academic data, attendance, MRP/WAM metrics, and communication logs from partnering institutions through formal data-sharing agreements.</p></div>
+      <div class="lb reveal d1"><div class="lb-hd"><div class="lb-n">2</div><h3>How We Use Your Data</h3></div><p>Exclusively for risk classifications, recommendations, and workflow automation. <strong>Never sold or shared.</strong></p></div>
+      <div class="lb reveal d2"><div class="lb-hd"><div class="lb-n">3</div><h3>Data Security</h3></div><p>TLS encryption, Microsoft Authenticator MFA, Supabase Row Level Security, and full audit logging on all events.</p></div>
+      <div class="lb reveal d3"><div class="lb-hd"><div class="lb-n">4</div><h3>Your Rights</h3></div><p>Request access or deletion at <a href="mailto:info@aisaa.ae">info@aisaa.ae</a>. UAE Federal Data Protection Law (Decree-Law No. 45 of 2021) compliant.</p></div>
+    </div>
+    <div class="ltpanel" id="lt">
+      <div class="lb reveal"><div class="lb-hd"><div class="lb-n">1</div><h3>Acceptance of Terms</h3></div><p>By using AISAA you agree to these terms. If you do not agree, cease use immediately.</p></div>
+      <div class="lb reveal d1"><div class="lb-hd"><div class="lb-n">2</div><h3>Permitted Use</h3></div><p>Licensed exclusively for authorised educational institutions for academic monitoring, advising, and analytics.</p></div>
+      <div class="lb reveal d2"><div class="lb-hd"><div class="lb-n">3</div><h3>Intellectual Property</h3></div><p>All content, software, and branding are exclusive property of QuadCore. Unauthorised reproduction prohibited.</p></div>
+      <div class="lb reveal d3"><div class="lb-hd"><div class="lb-n">4</div><h3>Governing Law</h3></div><p>Governed by UAE law. Dubai courts have jurisdiction. Contact: <a href="mailto:info@aisaa.ae">info@aisaa.ae</a></p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="fr">
+    <div class="flogo"><i>AIS</i><b>AA</b></div>
+    <div class="flinks">
+      <a href="#how">How It Works</a><a href="#roles">Stakeholders</a><a href="#features">Features</a>
+      <a href="#team">Team</a><a href="#reviews">Reviews</a><a href="#about">About</a>
+      <a href="#contact">Contact</a><a href="#legal">Legal</a>
+    </div>
+  </div>
+  <div class="fb">
+    <p>© 2025 QuadCore. All rights reserved. Dubai, UAE.</p>
+    <p>info@aisaa.ae · @aisaaquadcore</p>
+  </div>
+</footer>
+
+<script>
+// CURSOR
+const cur=document.getElementById('cur'),trail=document.getElementById('cur-trail');
+document.addEventListener('mousemove',e=>{
+  cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';
+  setTimeout(()=>{trail.style.left=e.clientX+'px';trail.style.top=e.clientY+'px'},80);
+});
+document.querySelectorAll('a,button,.flip-card,.step-card,.t-card,.cc,.rv-card,.lb,.mv,.sc').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.transform='translate(-50%,-50%) scale(2.2)';trail.style.width='52px';trail.style.height='52px'});
+  el.addEventListener('mouseleave',()=>{cur.style.transform='translate(-50%,-50%) scale(1)';trail.style.width='36px';trail.style.height='36px'});
+});
+
+// SCROLLBAR
+window.addEventListener('scroll',()=>{const p=window.scrollY/(document.body.scrollHeight-window.innerHeight);document.getElementById('sb').style.width=(p*100)+'%'});
+
+// NAV
+window.addEventListener('load',()=>setTimeout(()=>document.getElementById('nav').classList.add('show'),400));
+
+// CANVAS PARTICLE BACKGROUND (hero only)
+const canvas=document.getElementById('bgCanvas'),ctx=canvas.getContext('2d');
+let W,H,pts=[];
+function rsz(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+rsz();window.addEventListener('resize',()=>{rsz();mkPts()});
+function mkPts(){pts=[];for(let i=0;i<130;i++)pts.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2+.2,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,o:Math.random()*.28+.06,gold:Math.random()<.22})}
+mkPts();
+let mx=W/2,my=H/2;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+function drawBg(){
+  ctx.clearRect(0,0,W,H);
+  const t=Date.now()/4000;
+  // navy radial pulse
+  const g=ctx.createRadialGradient(W*.32+Math.sin(t)*W*.1,H*.38+Math.cos(t*.7)*H*.08,0,W*.32,H*.38,W*.52);
+  g.addColorStop(0,'rgba(15,32,64,.12)');g.addColorStop(1,'transparent');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // gold warmth
+  const g2=ctx.createRadialGradient(W*.72+Math.cos(t*.8)*W*.08,H*.58+Math.sin(t*.6)*H*.07,0,W*.72,H*.58,W*.32);
+  g2.addColorStop(0,'rgba(196,144,24,.07)');g2.addColorStop(1,'transparent');
+  ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);
+  // lines between nearby pts
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+    const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<130){ctx.strokeStyle=`rgba(180,210,255,${.05*(1-d/130)})`;ctx.lineWidth=.4;ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();}
+  }
+  // mouse threads
+  pts.forEach(p=>{const dx=p.x-mx,dy=p.y-my,d=Math.sqrt(dx*dx+dy*dy);if(d<170){ctx.strokeStyle=`rgba(232,184,48,${.045*(1-d/170)})`;ctx.lineWidth=.45;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(mx,my);ctx.stroke();}});
+  // dots
+  pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.gold?`rgba(232,184,48,${p.o})`:`rgba(160,190,240,${p.o})`;ctx.fill();});
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// REVEAL
+const obs=new IntersectionObserver(e=>e.forEach(en=>{if(en.isIntersecting)en.target.classList.add('vis')}),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ACCORDION
+function toggleAcc(n){const i=document.getElementById('fa'+n),w=i.classList.contains('open');document.querySelectorAll('.acc-item').forEach(x=>x.classList.remove('open'));if(!w)i.classList.add('open')}
+
+// TABS
+function switchTab(id,btn){document.querySelectorAll('.ltpanel').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.ltab').forEach(b=>b.classList.remove('on'));document.getElementById(id).classList.add('on');btn.classList.add('on')}
+
+// MODAL
+function openModal(){document.getElementById('demo-modal').classList.add('open')}
+function closeModal(){document.getElementById('demo-modal').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+// FORM
+async function submitForm(f,msg){
+  const{name,org,role,email,m}=f;
+  if(!name||!org||!email||!m){msg.className='er';msg.style.display='block';msg.textContent='Please fill in all required fields.';return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){msg.className='er';msg.style.display='block';msg.textContent='Please enter a valid email address.';return}
+  msg.className='';msg.style.display='block';msg.textContent='Sending…';
+  try{
+    const res=await fetch('https://formspree.io/f/xpwrjbkw',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name,organization:org,role,email,message:m,_subject:`AISAA Demo Request from ${name} — ${org}`})});
+    if(res.ok){msg.className='ok';msg.textContent="✓ Sent! We'll be in touch within 24 hours."}else throw 0;
+  }catch{msg.className='er';msg.textContent='Something went wrong. Email us directly: info@aisaa.ae'}
+}
+function sendDemo(){submitForm({name:document.getElementById('mn').value.trim(),org:document.getElementById('mo').value.trim(),role:document.getElementById('mr').value.trim(),email:document.getElementById('me').value.trim(),m:document.getElementById('mm').value.trim()},document.getElementById('mmsg'))}
+function sendContact(){submitForm({name:document.getElementById('cn').value.trim(),org:document.getElementById('co').value.trim(),role:document.getElementById('cr').value.trim(),email:document.getElementById('ce').value.trim(),m:document.getElementById('cm').value.trim()},document.getElementById('cfmsg'))}
+
+// 3D MOUSE TILT
+function tilt(sel,rx=12,ry=12){
+  document.querySelectorAll(sel).forEach(c=>{
+    c.addEventListener('mousemove',e=>{
+      const b=c.getBoundingClientRect(),x=(e.clientX-b.left)/b.width-.5,y=(e.clientY-b.top)/b.height-.5;
+      c.style.transform=`rotateX(${-y*rx}deg) rotateY(${x*ry}deg) translateZ(20px) translateY(-8px) scale(1.01)`;
+    });
+    c.addEventListener('mouseleave',()=>c.style.transform='');
+  });
+}
+tilt('.step-card',10,10);
+tilt('.t-card',12,10);
+tilt('.mv',8,8);
+tilt('.sc',14,12);
+tilt('.rv-card',8,8);
+tilt('.lb',7,7);
+tilt('.cc',6,6);
+</script>
+</body>
+</html>
