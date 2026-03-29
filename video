@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AISAA — Academic Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@300;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+    --bg: #0a0c10;
+    --gold: #e8b830;
+    --white: #ffffff;
+    --glass: rgba(255, 255, 255, 0.05);
+    --transition-speed: 1.2s; /* Slower transitions for readability */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Barlow', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    perspective: 1000px; /* Enables 3D environment */
+}
+
+/* --- Smooth Scene Management --- */
+.scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateZ(-100px) rotateX(5deg);
+    transition: opacity var(--transition-speed) ease, 
+                transform var(--transition-speed) cubic-bezier(0.2, 0.8, 0.2, 1),
+                visibility var(--transition-speed);
+}
+
+.scene.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateZ(0) rotateX(0deg);
+}
+
+/* --- Typography --- */
+h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(4rem, 10vw, 8rem);
+    text-transform: uppercase;
+    line-height: 0.9;
+    text-align: center;
+}
+
+.big-text {
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: 20px;
+}
+
+/* --- 3D Components --- */
+.card-3d {
+    background: var(--glass);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 40px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    transform: rotateY(-10deg);
+    box-shadow: 20px 20px 50px rgba(0,0,0,0.5);
+    max-width: 80%;
+}
+
+.bar-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 30px;
+    height: 300px;
+    margin-top: 40px;
+}
+
+.bar-3d {
+    width: 80px;
+    background: linear-gradient(to top, var(--gold), #f5cc50);
+    position: relative;
+    transform-style: preserve-3d;
+    transition: height 2s ease-out;
+    height: 0;
+}
+
+.bar-3d::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -10px;
+    width: 10; height: 100%;
+    background: rgba(0,0,0,0.2);
+    transform: skewY(45deg);
+}
+
+/* --- Progress Bar --- */
+#prog {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 6px;
+    background: rgba(255,255,255,0.1);
+    z-index: 1000;
+}
+#prog-fill {
+    height: 100%;
+    background: var(--gold);
+    width: 0%;
+}
+
+</style>
+</head>
+<body>
+
+<div id="prog"><div id="prog-fill"></div></div>
+
+<!-- SCENE 1: INTRO -->
+<div class="scene active" id="s1">
+    <h1 style="color:var(--gold)">AISAA</h1>
+    <p class="big-text">Smart Academic Advisor</p>
+</div>
+
+<!-- SCENE 2: THE PROBLEM -->
+<div class="scene" id="s2">
+    <div class="card-3d">
+        <p class="big-text" style="color:#fff">The Problem</p>
+        <h1>MANUAL DATA <br><span style="color:var(--gold)">IS SLOW</span></h1>
+        <p style="font-size: 1.5rem; margin-top: 20px; opacity: 0.7;">Universities struggle to identify at-risk students before it's too late.</p>
+    </div>
+</div>
+
+<!-- SCENE 3: THE SCALE -->
+<div class="scene" id="s3">
+    <p class="big-text">Real-Time Monitoring</p>
+    <h1 style="font-size: 12rem;">600+</h1>
+    <p class="big-text" style="color:#fff">Students Tracked Simultaneously</p>
+</div>
+
+<!-- SCENE 4: SOLUTIONS -->
+<div class="scene" id="s4">
+    <div class="card-3d" style="transform: rotateY(10deg);">
+        <h1 style="font-size: 4rem;">INTELLIGENT <br>AUTOMATION</h1>
+        <ul style="font-size: 2rem; list-style: none; margin-top: 20px;">
+            <li>⚡ Risk Classification (MRP)</li>
+            <li>📅 Agentic Scheduling</li>
+            <li>🤖 AI Policy Chatbot</li>
+            <li>📊 Course Analytics</li>
+        </ul>
+    </div>
+</div>
+
+<!-- SCENE 5: IMPACT -->
+<div class="scene" id="s5">
+    <p class="big-text">Student Success Rates</p>
+    <div class="bar-container">
+        <div class="bar-3d" id="bar1" style="height: 85%;">
+            <span style="position:absolute; top:-40px; width:100%; text-align:center; font-weight:bold;">85%</span>
+        </div>
+        <div class="bar-3d" id="bar2" style="height: 60%; background: #555;">
+            <span style="position:absolute; top:-40px; width:100%; text-align:center;">Before</span>
+        </div>
+    </div>
+    <p style="margin-top:40px; font-size: 1.5rem;">Higher Retention. Data-Driven Decisions.</p>
+</div>
+
+<script>
+const scenes = document.querySelectorAll('.scene');
+const progFill = document.getElementById('prog-fill');
+let currentIdx = 0;
+const displayTime = 4000; // 4 seconds per slide for high readability
+
+function nextScene() {
+    scenes[currentIdx].classList.remove('active');
+    
+    currentIdx = (currentIdx + 1) % scenes.length;
+    
+    scenes[currentIdx].classList.add('active');
+    
+    // Reset progress bar
+    progFill.style.transition = 'none';
+    progFill.style.width = '0%';
+    
+    setTimeout(() => {
+        progFill.style.transition = `width ${displayTime}ms linear`;
+        progFill.style.width = '100%';
+    }, 50);
+}
+
+// Start the loop
+progFill.style.transition = `width ${displayTime}ms linear`;
+progFill.style.width = '100%';
+setInterval(nextScene, displayTime);
+
+</script>
+</body>
+</html>
