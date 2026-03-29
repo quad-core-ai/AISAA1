@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AISAA — Innovation Fair 2024</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800;900&family=Barlow:wght@300;600&display=swap" rel="stylesheet"/>
+<title>AISAA — The Unified Vision</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@300;400;600&display=swap" rel="stylesheet"/>
 <style>
 :root {
-    --bg: #000000;
-    --gold: #e8b830; /* AISAA Gold */
-    --white: #ffffff;
-    --glass: rgba(255, 255, 255, 0.03);
-    --speed: 2s; /* Cinematic glide speed */
+    --navy: #0a192f;
+    --navy-light: #112240;
+    --gold: #e8b830;
+    --white: #e6f1ff;
+    --speed: 1.5s;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    background: var(--bg);
+    background: var(--navy);
     color: var(--white);
     font-family: 'Barlow', sans-serif;
     overflow: hidden;
@@ -25,18 +25,14 @@ body {
     perspective: 2000px;
 }
 
-/* Film Grain for a High-End Look */
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Noise_Texture.png');
-    opacity: 0.05;
-    pointer-events: none;
-    z-index: 100;
+/* Cinematic Overlay */
+body::after {
+    content: ""; position: fixed; inset: 0;
+    background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.4) 100%);
+    pointer-events: none; z-index: 10;
 }
 
-/* --- Cinema Scene Engine --- */
+/* --- Scene Logic --- */
 .scene {
     position: absolute;
     inset: 0;
@@ -46,85 +42,73 @@ body::before {
     justify-content: center;
     opacity: 0;
     visibility: hidden;
-    transform: translateZ(-500px) rotateY(10deg);
-    transition: opacity var(--speed) ease, 
-                transform var(--speed) cubic-bezier(0.2, 0.8, 0.2, 1),
-                visibility var(--speed);
-    padding: 5vw;
-    text-align: center;
+    transform: scale(1.1) translateY(20px);
+    transition: all var(--speed) cubic-bezier(0.2, 0.8, 0.2, 1);
+    padding: 40px;
 }
 
 .scene.active {
     opacity: 1;
     visibility: visible;
-    transform: translateZ(0) rotateY(0deg);
+    transform: scale(1) translateY(0);
 }
 
-/* --- Typography for TV Viewing --- */
+/* --- Typography --- */
 h1 {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: clamp(6rem, 18vw, 15rem);
+    font-size: clamp(4rem, 10vw, 8rem);
     text-transform: uppercase;
-    letter-spacing: -4px;
-    line-height: 0.8;
-    margin-bottom: 30px;
-}
-
-.label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.5rem;
-    letter-spacing: 10px;
-    text-transform: uppercase;
-    color: var(--gold);
+    line-height: 0.9;
     margin-bottom: 20px;
 }
 
-.description {
-    font-size: clamp(2rem, 4vw, 3.5rem);
+.highlight { color: var(--gold); }
+
+.context {
+    font-size: 2rem;
     font-weight: 300;
-    max-width: 1200px;
-    line-height: 1.2;
-    opacity: 0.9;
+    max-width: 900px;
+    line-height: 1.4;
+    text-align: center;
 }
 
-/* --- 3D Exhibition Components --- */
-.feature-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    width: 80%;
-    margin-top: 50px;
+/* --- Visual Elements --- */
+.image-container {
+    width: 400px;
+    height: 400px;
+    border: 2px solid var(--gold);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 30px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    background: var(--navy-light);
+    position: relative;
 }
 
-.feature-item {
-    background: var(--glass);
-    border-left: 5px solid var(--gold);
-    padding: 30px;
-    text-align: left;
-    backdrop-filter: blur(10px);
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(30%);
 }
 
-.feature-item h3 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 2.5rem;
-    color: var(--gold);
-    margin-bottom: 10px;
+.chaos-overlay {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(45deg, rgba(232, 184, 48, 0.1), transparent 2px, transparent 10px);
+    animation: jitter 0.2s infinite;
 }
 
-.stat-huge {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 20rem;
-    line-height: 1;
-    font-weight: 900;
-    color: var(--gold);
+@keyframes jitter {
+    0% { opacity: 0.3; } 50% { opacity: 0.1; } 100% { opacity: 0.3; }
 }
 
-/* --- Animated Progress Timeline --- */
-#timer {
+/* --- Progress Bar --- */
+#timer-bar {
     position: fixed;
-    bottom: 0; left: 0;
-    width: 100%; height: 10px;
-    background: rgba(255,255,255,0.05);
+    top: 0; left: 0;
+    width: 100%; height: 6px;
+    background: rgba(255,255,255,0.1);
     z-index: 1000;
 }
 #timer-fill {
@@ -137,79 +121,82 @@ h1 {
 </head>
 <body>
 
-<div id="timer"><div id="timer-fill"></div></div>
+<div id="timer-bar"><div id="timer-fill"></div></div>
 
 <div class="scene active" id="s1">
-    <div class="label">The Future of Advising</div>
-    <h1 style="color:var(--gold)">AISAA</h1>
-    <div class="description">Academic Intelligence Smart Academic Advisor</div>
+    <div class="image-container">
+        <img src="YOUR_AGENT_IMAGE_URL" alt="Overwhelmed Student">
+        <div class="chaos-overlay"></div>
+    </div>
+    <h1>LOST IN THE <span class="highlight">CHAOS</span></h1>
+    <p class="context">Disconnected data. Missed warnings. Stressed Faculty. Overwhelmed Students. <br>The current journey is broken.</p>
 </div>
 
 <div class="scene" id="s2">
-    <div class="label" style="color:#fff">The Challenge</div>
-    <h1>SILOED <br><span style="color:var(--gold)">DATA</span></h1>
-    <div class="description">University data is everywhere. Advisors can't see the risks until it's too late.</div>
-</div>
-
-<div class="scene" id="s3">
-    <div class="label">Real-Time Monitoring</div>
-    <div class="stat-huge">600+</div>
-    <div class="description">Students tracked simultaneously with <span style="color:var(--gold)">Predictive Risk Management</span>.</div>
-</div>
-
-<div class="scene" id="s4">
-    <h1 style="font-size: 6rem;">CORE INNOVATION</h1>
-    <div class="feature-grid">
-        <div class="feature-item">
-            <h3>MRP MODEL</h3>
-            <p>Predictive risk classification: Active to Excluded.</p>
-        </div>
-        <div class="feature-item">
-            <h3>AUTO-SUPPORT</h3>
-            <p>Automated alerts and agentic advisor scheduling.</p>
-        </div>
-        <div class="feature-item">
-            <h3>SMART PLANNING</h3>
-            <p>Priority-based degree pathing and course suggestions.</p>
-        </div>
-        <div class="feature-item">
-            <h3>INCLUSIVITY</h3>
-            <p>Integrated special needs tracking for professors.</p>
-        </div>
+    <h1 style="font-size: 5rem;">A UNIFIED <span class="highlight">SOLUTION</span></h1>
+    <p class="context">AISAA isn't just a tool. It's the bridge between every stakeholder in the academic ecosystem.</p>
+    <div style="margin-top: 40px; display: flex; gap: 20px;">
+        <div style="padding: 20px; border: 1px solid var(--gold);">STUDENTS</div>
+        <div style="padding: 20px; border: 1px solid var(--gold);">ADVISORS</div>
+        <div style="padding: 20px; border: 1px solid var(--gold);">FACULTY</div>
+        <div style="padding: 20px; border: 1px solid var(--gold);">ADMIN</div>
     </div>
 </div>
 
+<div class="scene" id="s3">
+    <div class="image-container">
+        <img src="https://images.unsplash.com/photo-1524178232363-1fb28f74b573?auto=format&fit=crop&q=80&w=800" alt="Faculty">
+    </div>
+    <h1>EMPOWERING <span class="highlight">FACULTY</span></h1>
+    <p class="context">No more manual tracking. Identify at-risk students in large classes instantly and focus on what matters: <b>Teaching.</b></p>
+</div>
+
+<div class="scene" id="s4">
+    <h1>PRECISION <span class="highlight">ADVISING</span></h1>
+    <div style="font-size: 8rem; font-weight: 900;" class="highlight">MRP</div>
+    <p class="context">Minimum Required Performance modeling categorizes every student. <br>Advisors act with data, not guesswork.</p>
+</div>
+
 <div class="scene" id="s5">
-    <div class="label">The Result</div>
-    <h1>SUCCESS <br><span style="color:var(--gold)">BY DESIGN</span></h1>
-    <div class="description">Higher retention. Personalized learning. Administrative efficiency.</div>
+    <div class="image-container">
+        <img src="https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=800" alt="Institution">
+    </div>
+    <h1>INSTITUTIONAL <span class="highlight">EXCELLENCE</span></h1>
+    <p class="context">Automated reporting. Increased retention. Special needs inclusivity. <br>Transforming the university into a smart ecosystem.</p>
+</div>
+
+<div class="scene" id="s6">
+    <div class="label" style="letter-spacing: 10px; color: var(--gold); margin-bottom: 20px;">INNOVATION FAIR 2024</div>
+    <h1>JOIN THE <br><span class="highlight">EVOLUTION</span></h1>
+    <p class="context">AISAA: Intelligence that cares for every stakeholder. <br><b>Let's build the future of education, together.</b></p>
 </div>
 
 <script>
 const scenes = document.querySelectorAll('.scene');
 const prog = document.getElementById('timer-fill');
 let currentIdx = 0;
-const sceneDuration = 7000; // 7 seconds per slide—perfect for people walking by a TV
 
-function transition() {
+// Set to 15 seconds per slide to reach the 90-second mark (6 scenes * 15s = 90s)
+const sceneTime = 15000; 
+
+function play() {
     scenes[currentIdx].classList.remove('active');
     currentIdx = (currentIdx + 1) % scenes.length;
     
-    // Reset timer bar
     prog.style.transition = 'none';
     prog.style.width = '0%';
     
     setTimeout(() => {
         scenes[currentIdx].classList.add('active');
-        prog.style.transition = `width ${sceneDuration}ms linear`;
+        prog.style.transition = `width ${sceneTime}ms linear`;
         prog.style.width = '100%';
     }, 100);
 }
 
-// Start sequence
-prog.style.transition = `width ${sceneDuration}ms linear`;
+// Start
+prog.style.transition = `width ${sceneTime}ms linear`;
 prog.style.width = '100%';
-setInterval(transition, sceneDuration);
+setInterval(play, sceneTime);
 </script>
 
 </body>
