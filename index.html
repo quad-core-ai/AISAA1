@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AISAA — The Stakeholder Evolution</title>
+<title>AISAA — The Innovation Fair Experience</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800;900&family=Barlow:wght@300;400;600&display=swap" rel="stylesheet"/>
 <style>
 :root {
-    --navy: #050b1a;
+    --navy: #020817;
+    --navy-glass: rgba(2, 8, 23, 0.85);
     --gold: #e8b830;
     --white: #ffffff;
-    --glass: rgba(10, 25, 47, 0.7);
-    --transition: 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    --speed: 1.1s;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -22,182 +22,220 @@ body, html {
     color: var(--white);
     font-family: 'Barlow', sans-serif;
     overflow: hidden;
-    perspective: 1500px;
 }
 
-/* Background Video Engine */
-.video-bg {
+/* --- High-End Video Engine --- */
+.video-layer {
     position: fixed;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     z-index: -1;
-    filter: brightness(0.3) saturate(0.8);
-    transition: opacity 1.5s ease-in-out;
+    filter: brightness(0.35) saturate(1.1);
     opacity: 0;
+    transition: opacity 2s ease-in-out;
 }
-.video-bg.active { opacity: 1; }
+.video-layer.active { opacity: 1; }
 
-/* Cinematic Overlay */
-.overlay {
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(circle, transparent 20%, var(--navy) 150%);
-    z-index: 0;
-}
-
-/* --- Kinetic Scene Engine --- */
+/* --- Scene Navigation --- */
 .scene {
     position: absolute;
     inset: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    z-index: 10;
+    padding: 8%;
     opacity: 0;
     visibility: hidden;
-    transform: rotateX(10deg) translateZ(-200px);
-    transition: opacity var(--transition), transform var(--transition), visibility var(--transition);
-    padding: 60px;
-    text-align: center;
+    transition: all var(--speed) cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .scene.active {
     opacity: 1;
     visibility: visible;
-    transform: rotateX(0deg) translateZ(0);
 }
 
-/* --- Kinetic Typography --- */
-.scene h1 {
+/* Alternating Layouts */
+.l-align { align-items: flex-start; text-align: left; }
+.r-align { align-items: flex-end; text-align: right; }
+
+/* --- 3D Kinetic Typography --- */
+h1 {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: clamp(4rem, 12vw, 10rem);
+    font-size: clamp(4rem, 9vw, 8rem);
     text-transform: uppercase;
     line-height: 0.85;
-    transform: translateY(50px);
-    transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    transform: translateY(80px) rotateX(-40deg);
+    transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1);
 }
-.scene.active h1 { transform: translateY(0); }
 
-.highlight { color: var(--gold); }
+.scene.active h1 { transform: translateY(0) rotateX(0); }
 
-.description {
-    font-size: clamp(1.5rem, 3vw, 2.8rem);
+.feature-card {
+    background: var(--navy-glass);
+    padding: 40px;
+    border-top: 4px solid var(--gold);
+    max-width: 750px;
+    backdrop-filter: blur(20px);
+    transform: translateY(40px);
+    opacity: 0;
+    transition: all 1.5s 0.2s cubic-bezier(0.19, 1, 0.22, 1);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+}
+
+.scene.active .feature-card { transform: translateY(0); opacity: 1; }
+
+.role-tag {
+    color: var(--gold);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.feature-card ul {
+    list-style: none;
+    font-size: 1.6rem;
     font-weight: 300;
-    max-width: 1100px;
-    background: var(--glass);
-    padding: 20px 40px;
-    border-left: 6px solid var(--gold);
-    backdrop-filter: blur(10px);
-    transform: translateY(30px);
-    transition: transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-    opacity: 0.9;
+    line-height: 1.5;
 }
-.scene.active .description { transform: translateY(0); }
 
-/* --- Progress Bar --- */
+.feature-card li::before {
+    content: "→ ";
+    color: var(--gold);
+    font-weight: 900;
+}
+
+/* --- Progress Timeline --- */
 #timer {
-    position: fixed;
-    top: 0; left: 0;
+    position: fixed; top: 0; left: 0;
     width: 100%; height: 6px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
     z-index: 1000;
 }
-#timer-fill {
-    height: 100%;
-    background: var(--gold);
-    width: 0%;
-}
+#fill { height: 100%; background: var(--gold); width: 0%; }
 </style>
 </head>
 <body>
 
-<div id="timer"><div id="timer-fill"></div></div>
-<div class="overlay"></div>
+<div id="timer"><div id="fill"></div></div>
 
-<video class="video-bg active" id="v1" autoplay muted loop>
-    <source src="https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-abstract-blue-lines-20320-large.mp4" type="video/mp4">
+<video class="video-layer active" id="v1" autoplay muted loop playsinline>
+    <source src="https://cdn.pixabay.com/video/2023/10/20/185834-876807895_large.mp4" type="video/mp4">
 </video>
-<video class="video-bg" id="v2" autoplay muted loop>
-    <source src="https://assets.mixkit.co/videos/preview/mixkit-cluttered-digital-data-screen-21758-large.mp4" type="video/mp4">
+<video class="video-layer" id="v2" autoplay muted loop playsinline>
+    <source src="https://cdn.pixabay.com/video/2021/04/13/70914-536961448_large.mp4" type="video/mp4">
 </video>
-<video class="video-bg" id="v3" autoplay muted loop>
-    <source src="https://assets.mixkit.co/videos/preview/mixkit-pensive-man-sitting-in-a-coffee-shop-40150-large.mp4" type="video/mp4">
-</video>
-<video class="video-bg" id="v4" autoplay muted loop>
-    <source src="https://assets.mixkit.co/videos/preview/mixkit-students-walking-in-a-university-campus-41443-large.mp4" type="video/mp4">
+<video class="video-layer" id="v3" autoplay muted loop playsinline>
+    <source src="https://cdn.pixabay.com/video/2023/11/03/187653-880946059_large.mp4" type="video/mp4">
 </video>
 
-<div class="scene active" data-video="v1">
-    <div style="letter-spacing: 12px; color: var(--gold); font-weight: 900; margin-bottom: 20px;">INNOVATION FAIR 2024</div>
-    <h1>AISAA</h1>
-    <div class="description">Academic Intelligence Smart Academic Advisor. <br><span class="highlight">A Unified Vision for Higher Education.</span></div>
+<div class="scene active l-align" data-vid="v1">
+    <span class="role-tag">The Challenge</span>
+    <h1>THE JOURNEY<br><span style="color:var(--gold)">IS DISCONNECTED.</span></h1>
+    <div class="feature-card">
+        <p style="font-size: 1.8rem; font-weight: 300;">Fragmented data leads to late interventions and missed opportunities. Faculty and students deserve a unified intelligence ecosystem.</p>
+    </div>
 </div>
 
-<div class="scene" data-video="v2">
-    <h1>THE <span class="highlight">CHAOS.</span></h1>
-    <div class="description">Disconnected systems. Manual tracking. Students slipping through the cracks while Faculty drowns in paperwork. <br><b>The current journey is broken.</b></div>
+<div class="scene r-align" data-vid="v2">
+    <span class="role-tag">Role 01 — Governance</span>
+    <h1>DEPARTMENTS<br>& <span style="color:var(--gold)">LEADERS</span></h1>
+    <div class="feature-card">
+        <ul>
+            <li>Bottleneck detection & fail rate flags</li>
+            <li>MRP & WAM distribution monitoring</li>
+            <li>Quota forecasts & graduate identification</li>
+        </ul>
+    </div>
 </div>
 
-<div class="scene" data-video="v3">
-    <h1>FOR THE <span class="highlight">STUDENT.</span></h1>
-    <div class="description">Your "Agent" doesn't just watch—he guides. Real-time MRP risk alerts keep you on the path to graduation with a student-centered approach.</div>
+<div class="scene l-align" data-vid="v1">
+    <span class="role-tag">Role 02 — Guidance</span>
+    <h1>ACADEMIC<br><span style="color:var(--gold)">ADVISORS</span></h1>
+    <div class="feature-card">
+        <ul>
+            <li>Automated n8n meeting scheduling</li>
+            <li>Real-time intervention tracking</li>
+            <li>Comprehensive student performance profiles</li>
+        </ul>
+    </div>
 </div>
 
-<div class="scene" data-video="v4">
-    <h1>FOR THE <span class="highlight">FACULTY.</span></h1>
-    <div class="description">Automated attendance, special needs integration, and agentic scheduling. <b>Focus on teaching</b>, let AISAA handle the logistics.</div>
+<div class="scene r-align" data-vid="v2">
+    <span class="role-tag">Role 03 — Delivery</span>
+    <h1>COURSE<br><span style="color:var(--gold)">FACULTY</span></h1>
+    <div class="feature-card">
+        <ul>
+            <li>At-risk student alerts & task trends</li>
+            <li>Automated attendance & absence tracking</li>
+            <li>Integrated counselor & accessibility notes</li>
+        </ul>
+    </div>
 </div>
 
-<div class="scene" data-video="v1">
-    <h1>THE <span class="highlight">INSTITUTION.</span></h1>
-    <div class="description">Data-driven retention. Administrative efficiency. Special needs inclusivity linked directly to professors. A smarter campus for everyone.</div>
+<div class="scene l-align" data-vid="v1">
+    <span class="role-tag">Role 04 — Welfare</span>
+    <h1>SUCCESS<br><span style="color:var(--gold)">CENTRE</span></h1>
+    <div class="feature-card">
+        <ul>
+            <li>Centralized student welfare documentation</li>
+            <li>Excuse request review & resolution</li>
+            <li>Data export for governance reporting</li>
+        </ul>
+    </div>
 </div>
 
-<div class="scene" data-video="v2">
-    <h1>JOIN THE <br><span class="highlight">EVOLUTION.</span></h1>
-    <div class="description">AISAA: Bringing Students, Faculty, and Administrators into one intelligent ecosystem. <br><b>Let’s redefine the academic journey.</b></div>
+<div class="scene r-align" data-vid="v3">
+    <span class="role-tag">Role 05 — The Journey</span>
+    <h1>SMART<br><span style="color:var(--gold)">STUDENTS</span></h1>
+    <div class="feature-card">
+        <ul>
+            <li>Visual Degree Planner & subject recs</li>
+            <li>Real-time MRP & attendance dashboard</li>
+            <li>AI FAQ Chatbot & excuse submission</li>
+        </ul>
+    </div>
 </div>
 
 <script>
 const scenes = document.querySelectorAll('.scene');
-const videos = document.querySelectorAll('.video-bg');
-const prog = document.getElementById('timer-fill');
-let currentIdx = 0;
-const sceneDuration = 15000; // 15 seconds per scene = 90 seconds total
+const vids = document.querySelectorAll('.video-layer');
+const fill = document.getElementById('fill');
+let cur = 0;
+const dur = 13000; // 13s per scene for a total 78s video (within your 80-90s goal)
 
-function playNext() {
-    // Transition Scene
-    scenes[currentIdx].classList.remove('active');
+function next() {
+    scenes[cur].classList.remove('active');
+    const oldVid = scenes[cur].getAttribute('data-vid');
     
-    // Manage Video Backgrounds
-    const oldVideoId = scenes[currentIdx].getAttribute('data-video');
-    currentIdx = (currentIdx + 1) % scenes.length;
-    const newVideoId = scenes[currentIdx].getAttribute('data-video');
-    
-    if(oldVideoId !== newVideoId) {
-        document.getElementById(oldVideoId).classList.remove('active');
-        document.getElementById(newVideoId).classList.add('active');
+    cur = (cur + 1) % scenes.length;
+    const newVid = scenes[cur].getAttribute('data-vid');
+
+    // Switch video if needed
+    if(oldVid !== newVid) {
+        document.getElementById(oldVid).classList.remove('active');
+        document.getElementById(newVid).classList.add('active');
     }
 
-    // Reset Progress Bar
-    prog.style.transition = 'none';
-    prog.style.width = '0%';
+    fill.style.transition = 'none';
+    fill.style.width = '0%';
     
     setTimeout(() => {
-        scenes[currentIdx].classList.add('active');
-        prog.style.transition = `width ${sceneDuration}ms linear`;
-        prog.style.width = '100%';
+        scenes[cur].classList.add('active');
+        fill.style.transition = `width ${dur}ms linear`;
+        fill.style.width = '100%';
     }, 100);
 }
 
-// Start
-prog.style.transition = `width ${sceneDuration}ms linear`;
-prog.style.width = '100%';
-setInterval(playNext, sceneDuration);
+// Start sequence
+fill.style.transition = `width ${dur}ms linear`;
+fill.style.width = '100%';
+setInterval(next, dur);
 </script>
 
 </body>
