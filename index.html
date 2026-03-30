@@ -8,7 +8,7 @@
 <style>
 :root {
     --navy: #020817;
-    --navy-glass: rgba(2, 8, 23, 0.9);
+    --navy-glass: rgba(2, 8, 23, 0.92);
     --gold: #e8b830;
     --white: #ffffff;
     --speed: 0.9s;
@@ -59,11 +59,11 @@ body, html {
 /* --- 3D Kinetic Typography --- */
 h1 {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: clamp(4rem, 8.5vw, 8rem);
+    font-size: clamp(3.5rem, 8vw, 7.5rem);
     text-transform: uppercase;
     line-height: 0.85;
     margin-bottom: 25px;
-    transform: translateY(100px) rotateX(-45deg);
+    transform: translateY(80px) rotateX(-45deg);
     transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -73,18 +73,20 @@ h1 {
 .intro-text span {
     display: inline-block;
     opacity: 0;
-    transform: translateY(20px) rotateY(90deg);
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: translateY(30px) scale(0.5);
+    filter: blur(10px);
+    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .scene.active .intro-text span {
     opacity: 1;
-    transform: translateY(0) rotateY(0);
+    transform: translateY(0) scale(1);
+    filter: blur(0);
 }
 
 .feature-card {
     background: var(--navy-glass);
-    padding: 40px;
+    padding: 35px 45px;
     border-left: 5px solid var(--gold);
     max-width: 850px;
     backdrop-filter: blur(25px);
@@ -101,7 +103,7 @@ h1 {
 .role-tag {
     color: var(--gold);
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     letter-spacing: 8px;
     text-transform: uppercase;
     margin-bottom: 10px;
@@ -119,39 +121,35 @@ li::before { content: "→ "; color: var(--gold); font-weight: 900; }
 
 <div id="timer"><div id="fill"></div></div>
 
-<!-- Backgrounds -->
-<video class="video-layer active" id="v_tech" autoplay muted loop playsinline><source src="https://cdn.pixabay.com/video/2023/10/20/185834-876807895_large.mp4" type="video/mp4"></video>
-<video class="video-layer" id="v_chaos" autoplay muted loop playsinline><source src="https://cdn.pixabay.com/video/2021/04/13/70914-536961448_large.mp4" type="video/mp4"></video>
-<video class="video-layer" id="v_campus" autoplay muted loop playsinline><source src="https://cdn.pixabay.com/video/2023/11/03/187653-880946059_large.mp4" type="video/mp4"></video>
+<video class="video-layer active" id="v_tech" autoplay muted loop playsinline><source src="https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-abstract-blue-lines-20320-large.mp4" type="video/mp4"></video>
+<video class="video-layer" id="v_chaos" autoplay muted loop playsinline><source src="https://assets.mixkit.co/videos/preview/mixkit-cluttered-digital-data-screen-21758-large.mp4" type="video/mp4"></video>
+<video class="video-layer" id="v_campus" autoplay muted loop playsinline><source src="https://assets.mixkit.co/videos/preview/mixkit-university-campus-building-with-green-lawn-43542-large.mp4" type="video/mp4"></video>
 
-<!-- 1. INTRO SLIDE -->
 <div class="scene active c-align" data-vid="v_tech">
     <span class="role-tag">Introducing</span>
     <h1 class="intro-text" id="intro-title">AISAA</h1>
     <div class="feature-card">
-        <p style="font-size: 2rem; font-weight: 400; letter-spacing: 2px;">ACADEMIC INTELLIGENCE SMART ACADEMIC ADVISOR</p>
+        <p style="font-size: 1.8rem; font-weight: 400; letter-spacing: 2px;">ACADEMIC INTELLIGENCE SMART ACADEMIC ADVISOR</p>
     </div>
 </div>
 
-<!-- 2. EXPANDED PROBLEM SLIDE -->
 <div class="scene l-align" data-vid="v_chaos">
-    <span class="role-tag">The Current Reality</span>
+    <span class="role-tag">The Reality</span>
     <h1>LOST IN THE <span style="color:var(--gold)">CHAOS.</span></h1>
     <div class="feature-card">
-        <ul>
-            <li><strong>Leadership:</strong> Navigating without program-level governance data.</li>
-            <li><strong>Advisors:</strong> Drowning in manual tracking and reactive scheduling.</li>
-            <li><strong>Faculty:</strong> Managing large-scale attendance and risk with no automation.</li>
-            <li><strong>Support:</strong> Siloed welfare notes and fragmented support resources.</li>
+        <ul style="font-size: 1.25rem;">
+            <li><strong>Head of School:</strong> Operating without program-level analytics or governance intelligence.</li>
             <li><strong>Students:</strong> Confused timelines and reactive warnings — <em>too little, too late.</em></li>
+            <li><strong>Faculty:</strong> Drowning in manual tracking, excuses, and large-scale attendance.</li>
+            <li><strong>Advisors:</strong> Stressed by manual scheduling and a lack of real-time performance profiles.</li>
+            <li><strong>Success Centre:</strong> Siloed welfare notes and fragmented support resource allocation.</li>
         </ul>
     </div>
 </div>
 
-<!-- 3. LEADERSHIP -->
 <div class="scene r-align" data-vid="v_tech">
     <span class="role-tag">Role 01 — Governance</span>
-    <h1>INSTITUTIONAL<br><span style="color:var(--gold)">LEADERSHIP</span></h1>
+    <h1>HEAD OF<br><span style="color:var(--gold)">SCHOOL</span></h1>
     <div class="feature-card">
         <ul>
             <li>Programme-level analytics & governance intelligence</li>
@@ -162,41 +160,39 @@ li::before { content: "→ "; color: var(--gold); font-weight: 900; }
 </div>
 <div class="scene l-align" data-vid="v_tech">
     <span class="role-tag">How AISAA Helps</span>
-    <h1>STRATEGIC<br><span style="color:var(--gold)">EFFICIENCY</span></h1>
+    <h1>STRATEGIC<br><span style="color:var(--gold)">OVERSIGHT</span></h1>
     <div class="feature-card">
-        <p style="font-size: 1.8rem; font-weight: 300;">Identifies at-risk courses before they fail. Streamlines quota forecasts and top graduate tracking for high-level decision making.</p>
+        <p style="font-size: 1.6rem; font-weight: 300;">Empowers leadership with data-driven quota forecasts and fail-rate flags to maintain institutional excellence.</p>
     </div>
 </div>
 
-<!-- 4. ADVISORS -->
 <div class="scene r-align" data-vid="v_campus">
-    <span class="role-tag">Role 02 — Guidance</span>
-    <h1>ACADEMIC<br><span style="color:var(--gold)">ADVISING</span></h1>
+    <span class="role-tag">Role 02 — The Journey</span>
+    <h1>SMART<br><span style="color:var(--gold)">STUDENTS</span></h1>
     <div class="feature-card">
         <ul>
-            <li>Automated scheduling via n8n</li>
-            <li>Full student progress & recommendation profiles</li>
-            <li>Intervention tracking & alert counts</li>
+            <li>Real-time MRP, WAM, and attendance dashboard</li>
+            <li>Visual Degree Planner with CP tracking</li>
+            <li>AI FAQ Chatbot & elective eligibility checker</li>
         </ul>
     </div>
 </div>
 <div class="scene l-align" data-vid="v_campus">
     <span class="role-tag">How AISAA Helps</span>
-    <h1>PRECISION<br><span style="color:var(--gold)">MENTORING</span></h1>
+    <h1>PROACTIVE<br><span style="color:var(--gold)">SUCCESS</span></h1>
     <div class="feature-card">
-        <p style="font-size: 1.8rem; font-weight: 300;">Eliminates administrative guesswork. Advisors stop calculating data and start saving student futures through targeted intervention.</p>
+        <p style="font-size: 1.6rem; font-weight: 300;">Moves students from reactive to proactive. They always know exactly where they stand and the path to graduation.</p>
     </div>
 </div>
 
-<!-- 5. FACULTY -->
 <div class="scene r-align" data-vid="v_tech">
     <span class="role-tag">Role 03 — Delivery</span>
     <h1>COURSE<br><span style="color:var(--gold)">FACULTY</span></h1>
     <div class="feature-card">
         <ul>
-            <li>Automated attendance & absence tracking</li>
-            <li>At-risk student alerts & task trend analysis</li>
-            <li>Weekly attendance graphs & student lookup</li>
+            <li>Automated attendance & at-risk student alerts</li>
+            <li>Direct integration of counselor & accessibility notes</li>
+            <li>Weekly course analytics & student lookup</li>
         </ul>
     </div>
 </div>
@@ -204,51 +200,48 @@ li::before { content: "→ "; color: var(--gold); font-weight: 900; }
     <span class="role-tag">How AISAA Helps</span>
     <h1>FOCUS ON<br><span style="color:var(--gold)">TEACHING</span></h1>
     <div class="feature-card">
-        <p style="font-size: 1.8rem; font-weight: 300;">Instantly highlights students needing support in large classes. Faculty can manage excuses and attendance with one-click automation.</p>
+        <p style="font-size: 1.6rem; font-weight: 300;">Eliminates the administrative burden of attendance and excuse management, allowing faculty to focus on education.</p>
     </div>
 </div>
 
-<!-- 6. SUCCESS CENTRE -->
 <div class="scene r-align" data-vid="v_campus">
-    <span class="role-tag">Role 04 — Welfare</span>
-    <h1>STUDENT<br><span style="color:var(--gold)">SUPPORT</span></h1>
+    <span class="role-tag">Role 04 — Guidance</span>
+    <h1>ACADEMIC<br><span style="color:var(--gold)">ADVISORS</span></h1>
     <div class="feature-card">
         <ul>
-            <li>Centralized counselor notes & welfare docs</li>
-            <li>Excuse request final resolution hub</li>
-            <li>Data export (PDF/Excel) for reporting</li>
+            <li>Automated meeting scheduling via n8n</li>
+            <li>Full student performance & progress recommendations</li>
+            <li>Intervention tracking and excuse review hub</li>
         </ul>
     </div>
 </div>
 <div class="scene l-align" data-vid="v_campus">
     <span class="role-tag">How AISAA Helps</span>
-    <h1>CENTRALIZED<br><span style="color:var(--gold)">CARE</span></h1>
+    <h1>PRECISION<br><span style="color:var(--gold)">ADVISING</span></h1>
     <div class="feature-card">
-        <p style="font-size: 1.8rem; font-weight: 300;">Bridges the gap between counseling and the classroom. Ensures support resources are allocated where they are needed most.</p>
+        <p style="font-size: 1.6rem; font-weight: 300;">Advisors spend time mentoring, not calculating. Targeted interventions based on real-time MRP data save student futures.</p>
     </div>
 </div>
 
-<!-- 7. STUDENT -->
 <div class="scene r-align" data-vid="v_tech">
-    <span class="role-tag">Role 05 — The Journey</span>
-    <h1>SMART<br><span style="color:var(--gold)">STUDENTS</span></h1>
+    <span class="role-tag">Role 05 — Welfare</span>
+    <h1>SUCCESS<br><span style="color:var(--gold)">CENTRE</span></h1>
     <div class="feature-card">
         <ul>
-            <li>Visual Degree Planner & CP tracking</li>
-            <li>AI FAQ Chatbot & elective eligibility</li>
-            <li>Real-time MRP & attendance dashboard</li>
+            <li>Centralized welfare notes & resource allocation</li>
+            <li>Reassigned excuse request resolution</li>
+            <li>Data export for governance & reporting</li>
         </ul>
     </div>
 </div>
 <div class="scene l-align" data-vid="v_tech">
     <span class="role-tag">How AISAA Helps</span>
-    <h1>PROACTIVE<br><span style="color:var(--gold)">SUCCESS</span></h1>
+    <h1>UNIFIED<br><span style="color:var(--gold)">SUPPORT</span></h1>
     <div class="feature-card">
-        <p style="font-size: 1.8rem; font-weight: 300;">Moves students from reactive to proactive. They always know exactly where they stand and the shortest path to graduation.</p>
+        <p style="font-size: 1.6rem; font-weight: 300;">Bridges the gap between clinical support and the classroom. Ensures at-risk monitoring is holistic and inclusive.</p>
     </div>
 </div>
 
-<!-- FINAL SLIDE -->
 <div class="scene c-align" data-vid="v_chaos">
     <h1>JOIN THE<br><span style="color:var(--gold)">EVOLUTION.</span></h1>
     <div class="feature-card">
@@ -260,14 +253,14 @@ li::before { content: "→ "; color: var(--gold); font-weight: 900; }
 // Split text for intro animation
 const introTitle = document.getElementById('intro-title');
 introTitle.innerHTML = introTitle.innerText.split('').map((char, i) => 
-    `<span style="transition-delay: ${i * 0.1}s">${char}</span>`
+    `<span style="transition-delay: ${i * 0.15}s">${char}</span>`
 ).join('');
 
 const scenes = document.querySelectorAll('.scene');
 const vids = document.querySelectorAll('.video-layer');
 const fill = document.getElementById('fill');
 let cur = 0;
-const dur = 8500; // Adjusted duration for readability
+const dur = 7500; // 7.5 seconds per slide
 
 function next() {
     scenes[cur].classList.remove('active');
@@ -290,9 +283,15 @@ function next() {
     }, 100);
 }
 
-fill.style.transition = `width ${dur}ms linear`;
-fill.style.width = '100%';
-setInterval(next, dur);
+// Global initialization
+window.onload = () => {
+    // Force start all videos for TV displays
+    vids.forEach(v => v.play().catch(e => console.log("Video interaction required")));
+    
+    fill.style.transition = `width ${dur}ms linear`;
+    fill.style.width = '100%';
+    setInterval(next, dur);
+};
 </script>
 
 </body>
