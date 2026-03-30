@@ -11,7 +11,8 @@
     --navy-glass: rgba(2, 8, 23, 0.92);
     --gold: #e8b830;
     --white: #ffffff;
-    --speed: 0.9s;
+    --red: #ff4d4d;
+    --speed: 0.8s;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,66 +25,55 @@ body, html {
     overflow: hidden;
 }
 
-/* --- Cinema Video Engine --- */
+/* --- Video Engine --- */
 .video-layer {
-    position: fixed;
-    inset: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    z-index: -1;
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; z-index: -1;
     filter: brightness(0.3) saturate(1.2);
-    opacity: 0;
-    transition: opacity 1.5s ease-in-out;
+    opacity: 0; transition: opacity 1.5s ease-in-out;
 }
 .video-layer.active { opacity: 1; }
 
 /* --- Layout Engine --- */
 .scene {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 8%;
-    opacity: 0;
-    visibility: hidden;
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 8%; opacity: 0; visibility: hidden;
     transition: all var(--speed) cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 .scene.active { opacity: 1; visibility: visible; }
 
 .l-align { align-items: flex-start; text-align: left; }
 .r-align { align-items: flex-end; text-align: right; }
 .c-align { align-items: center; text-align: center; }
 
-/* --- 3D Kinetic Typography --- */
+/* --- Typography --- */
 h1 {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: clamp(3.5rem, 8vw, 7.5rem);
-    text-transform: uppercase;
-    line-height: 0.85;
-    margin-bottom: 25px;
+    text-transform: uppercase; line-height: 0.85; margin-bottom: 25px;
     transform: translateY(80px) rotateX(-45deg);
     transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 .scene.active h1 { transform: translateY(0) rotateX(0); }
 
-/* --- Intro Animation Style --- */
-.intro-text span {
-    display: inline-block;
-    opacity: 0;
-    transform: translateY(30px) scale(0.5);
+/* --- Question Punch Animation --- */
+.question-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(2.5rem, 5vw, 5rem);
+    color: var(--white);
+    text-transform: uppercase;
+    font-weight: 900;
+    line-height: 1.1;
+    transform: scale(1.2);
     filter: blur(10px);
-    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.5s cubic-bezier(0.17, 0.84, 0.44, 1);
 }
+.scene.active .question-text { transform: scale(1); filter: blur(0); }
 
-.scene.active .intro-text span {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-}
+.q-highlight { color: var(--gold); display: block; font-size: 1.2em; }
 
+/* --- Feature Cards --- */
 .feature-card {
     background: var(--navy-glass);
     padding: 35px 45px;
@@ -95,22 +85,12 @@ h1 {
     transition: all 1s 0.3s ease-out;
     box-shadow: 20px 20px 60px rgba(0,0,0,0.6);
 }
-
 .r-align .feature-card { border-left: none; border-right: 5px solid var(--gold); transform: translateX(50px); }
 .c-align .feature-card { border-left: none; border-bottom: 5px solid var(--gold); transform: translateY(50px); }
 .scene.active .feature-card { transform: translate(0); opacity: 1; }
 
-.role-tag {
-    color: var(--gold);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.3rem;
-    letter-spacing: 8px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-}
-
+.role-tag { color: var(--gold); font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; letter-spacing: 8px; text-transform: uppercase; margin-bottom: 10px; }
 ul { list-style: none; font-size: 1.4rem; font-weight: 300; line-height: 1.4; }
-li { margin-bottom: 8px; }
 li::before { content: "→ "; color: var(--gold); font-weight: 900; }
 
 #timer { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: rgba(255,255,255,0.05); z-index: 1000; }
@@ -127,9 +107,39 @@ li::before { content: "→ "; color: var(--gold); font-weight: 900; }
 
 <div class="scene active c-align" data-vid="v_tech">
     <span class="role-tag">Introducing</span>
-    <h1 class="intro-text" id="intro-title">AISAA</h1>
+    <h1 style="font-size: 10vw;">AISAA</h1>
     <div class="feature-card">
         <p style="font-size: 1.8rem; font-weight: 400; letter-spacing: 2px;">ACADEMIC INTELLIGENCE SMART ACADEMIC ADVISOR</p>
+    </div>
+</div>
+
+<div class="scene c-align" data-vid="v_chaos">
+    <div class="question-text">
+        Are you a <span class="q-highlight">HEAD OF SCHOOL</span><br>leading without data?
+    </div>
+</div>
+
+<div class="scene c-align" data-vid="v_chaos">
+    <div class="question-text">
+        Are you a <span class="q-highlight">STUDENT</span><br>lost in graduation timelines?
+    </div>
+</div>
+
+<div class="scene c-align" data-vid="v_chaos">
+    <div class="question-text">
+        Are you a <span class="q-highlight">FACULTY MEMBER</span><br>drowning in manual attendance?
+    </div>
+</div>
+
+<div class="scene c-align" data-vid="v_chaos">
+    <div class="question-text">
+        Are you an <span class="q-highlight">ADVISOR</span><br>tired of compiling all works?
+    </div>
+</div>
+
+<div class="scene c-align" data-vid="v_chaos">
+    <div class="question-text">
+        Are you a <span class="q-highlight">SUCCESS CENTRE</span><br>working in siloed data?
     </div>
 </div>
 
@@ -137,18 +147,18 @@ li::before { content: "→ "; color: var(--gold); font-weight: 900; }
     <span class="role-tag">The Reality</span>
     <h1>LOST IN THE <span style="color:var(--gold)">CHAOS.</span></h1>
     <div class="feature-card">
-        <ul style="font-size: 1.25rem;">
-            <li><strong>Head of School:</strong> Operating without program-level analytics or governance intelligence.</li>
-            <li><strong>Students:</strong> Confused timelines and reactive warnings — <em>too little, too late.</em></li>
-            <li><strong>Faculty:</strong> Drowning in manual tracking, excuses, and large-scale attendance.</li>
-            <li><strong>Advisors:</strong> Stressed by manual scheduling and a lack of real-time performance profiles.</li>
-            <li><strong>Success Centre:</strong> Siloed welfare notes and fragmented support resource allocation.</li>
+        <ul style="font-size: 1.2rem;">
+            <li><strong>Head of School:</strong> Operating without analytics.</li>
+            <li><strong>Students:</strong> Confused timelines & reactive warnings.</li>
+            <li><strong>Faculty:</strong> Manual tracking & large-scale chaos.</li>
+            <li><strong>Advisors:</strong> Stressed by manual work & no profiles.</li>
+            <li><strong>Success Centre:</strong> Fragmented welfare & resource gaps.</li>
         </ul>
     </div>
 </div>
 
 <div class="scene r-align" data-vid="v_tech">
-    <span class="role-tag">Role 01 — Governance</span>
+    <span class="role-tag">Role 01</span>
     <h1>HEAD OF<br><span style="color:var(--gold)">SCHOOL</span></h1>
     <div class="feature-card">
         <ul>
@@ -162,18 +172,18 @@ li::before { content: "→ "; color: var(--gold); font-weight: 900; }
     <span class="role-tag">How AISAA Helps</span>
     <h1>STRATEGIC<br><span style="color:var(--gold)">OVERSIGHT</span></h1>
     <div class="feature-card">
-        <p style="font-size: 1.6rem; font-weight: 300;">Empowers leadership with data-driven quota forecasts and fail-rate flags to maintain institutional excellence.</p>
+        <p>Empowers leadership with data-driven quota forecasts and fail-rate flags to maintain institutional excellence.</p>
     </div>
 </div>
 
 <div class="scene r-align" data-vid="v_campus">
-    <span class="role-tag">Role 02 — The Journey</span>
+    <span class="role-tag">Role 02</span>
     <h1>SMART<br><span style="color:var(--gold)">STUDENTS</span></h1>
     <div class="feature-card">
         <ul>
             <li>Real-time MRP, WAM, and attendance dashboard</li>
             <li>Visual Degree Planner with CP tracking</li>
-            <li>AI FAQ Chatbot & elective eligibility checker</li>
+            <li>AI FAQ Chatbot & elective eligibility</li>
         </ul>
     </div>
 </div>
@@ -181,17 +191,17 @@ li::before { content: "→ "; color: var(--gold); font-weight: 900; }
     <span class="role-tag">How AISAA Helps</span>
     <h1>PROACTIVE<br><span style="color:var(--gold)">SUCCESS</span></h1>
     <div class="feature-card">
-        <p style="font-size: 1.6rem; font-weight: 300;">Moves students from reactive to proactive. They always know exactly where they stand and the path to graduation.</p>
+        <p>Moves students from reactive to proactive. They always know exactly where they stand and the path to graduation.</p>
     </div>
 </div>
 
 <div class="scene r-align" data-vid="v_tech">
-    <span class="role-tag">Role 03 — Delivery</span>
+    <span class="role-tag">Role 03</span>
     <h1>COURSE<br><span style="color:var(--gold)">FACULTY</span></h1>
     <div class="feature-card">
         <ul>
             <li>Automated attendance & at-risk student alerts</li>
-            <li>Direct integration of counselor & accessibility notes</li>
+            <li>Direct integration of counselor notes</li>
             <li>Weekly course analytics & student lookup</li>
         </ul>
     </div>
@@ -200,17 +210,17 @@ li::before { content: "→ "; color: var(--gold); font-weight: 900; }
     <span class="role-tag">How AISAA Helps</span>
     <h1>FOCUS ON<br><span style="color:var(--gold)">TEACHING</span></h1>
     <div class="feature-card">
-        <p style="font-size: 1.6rem; font-weight: 300;">Eliminates the administrative burden of attendance and excuse management, allowing faculty to focus on education.</p>
+        <p>Eliminates the administrative burden of attendance and excuse management, allowing faculty to focus on education.</p>
     </div>
 </div>
 
 <div class="scene r-align" data-vid="v_campus">
-    <span class="role-tag">Role 04 — Guidance</span>
+    <span class="role-tag">Role 04</span>
     <h1>ACADEMIC<br><span style="color:var(--gold)">ADVISORS</span></h1>
     <div class="feature-card">
         <ul>
             <li>Automated meeting scheduling via n8n</li>
-            <li>Full student performance & progress recommendations</li>
+            <li>Full student performance & recommendations</li>
             <li>Intervention tracking and excuse review hub</li>
         </ul>
     </div>
@@ -219,12 +229,12 @@ li::before { content: "→ "; color: var(--gold); font-weight: 900; }
     <span class="role-tag">How AISAA Helps</span>
     <h1>PRECISION<br><span style="color:var(--gold)">ADVISING</span></h1>
     <div class="feature-card">
-        <p style="font-size: 1.6rem; font-weight: 300;">Advisors spend time mentoring, not calculating. Targeted interventions based on real-time MRP data save student futures.</p>
+        <p>Advisors spend time mentoring, not calculating. Targeted interventions based on real-time data save student futures.</p>
     </div>
 </div>
 
 <div class="scene r-align" data-vid="v_tech">
-    <span class="role-tag">Role 05 — Welfare</span>
+    <span class="role-tag">Role 05</span>
     <h1>SUCCESS<br><span style="color:var(--gold)">CENTRE</span></h1>
     <div class="feature-card">
         <ul>
@@ -238,7 +248,7 @@ li::before { content: "→ "; color: var(--gold); font-weight: 900; }
     <span class="role-tag">How AISAA Helps</span>
     <h1>UNIFIED<br><span style="color:var(--gold)">SUPPORT</span></h1>
     <div class="feature-card">
-        <p style="font-size: 1.6rem; font-weight: 300;">Bridges the gap between clinical support and the classroom. Ensures at-risk monitoring is holistic and inclusive.</p>
+        <p>Bridges the gap between clinical support and the classroom. Ensures at-risk monitoring is holistic and inclusive.</p>
     </div>
 </div>
 
@@ -250,23 +260,20 @@ li::before { content: "→ "; color: var(--gold); font-weight: 900; }
 </div>
 
 <script>
-// Split text for intro animation
-const introTitle = document.getElementById('intro-title');
-introTitle.innerHTML = introTitle.innerText.split('').map((char, i) => 
-    `<span style="transition-delay: ${i * 0.15}s">${char}</span>`
-).join('');
-
 const scenes = document.querySelectorAll('.scene');
 const vids = document.querySelectorAll('.video-layer');
 const fill = document.getElementById('fill');
 let cur = 0;
-const dur = 7500; // 7.5 seconds per slide
+
+// Shorter duration for the "Question" slides (3s) vs content slides (7s)
+const durations = [6000, 3500, 3500, 3500, 3500, 3500, 8000, 7000, 7000, 7000, 7000, 7000, 7000, 7000, 7000, 7000, 7000, 7000];
 
 function next() {
     scenes[cur].classList.remove('active');
     const oldVid = scenes[cur].getAttribute('data-vid');
     cur = (cur + 1) % scenes.length;
     const newVid = scenes[cur].getAttribute('data-vid');
+    const currentDur = durations[cur] || 7000;
 
     if(oldVid !== newVid) {
         document.getElementById(oldVid).classList.remove('active');
@@ -278,19 +285,17 @@ function next() {
     
     setTimeout(() => {
         scenes[cur].classList.add('active');
-        fill.style.transition = `width ${dur}ms linear`;
+        fill.style.transition = `width ${currentDur}ms linear`;
         fill.style.width = '100%';
+        setTimeout(next, currentDur);
     }, 100);
 }
 
-// Global initialization
 window.onload = () => {
-    // Force start all videos for TV displays
-    vids.forEach(v => v.play().catch(e => console.log("Video interaction required")));
-    
-    fill.style.transition = `width ${dur}ms linear`;
+    vids.forEach(v => v.play().catch(e => {}));
+    fill.style.transition = `width ${durations[0]}ms linear`;
     fill.style.width = '100%';
-    setInterval(next, dur);
+    setTimeout(next, durations[0]);
 };
 </script>
 
